@@ -1,643 +1,386 @@
-from pathlib import Path
-
-html = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reserva de Carros – Triton / Strada</title>
-  <style>
-    :root{
-      --bg:#0b1220;
-      --card:#111a2e;
-      --card2:#0f1830;
-      --text:#e9eefc;
-      --muted:#a8b3d6;
-      --line:rgba(255,255,255,.10);
-      --shadow: 0 12px 30px rgba(0,0,0,.35);
+<meta charset="UTF-8">
+<title>Reserva de Carros – Triton / Strada</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-      --blue:#6ea8ff;      /* seleção */
-      --blue2:#2563eb;     /* reservado */
-      --blueSoft:rgba(110,168,255,.18);
+<style>
+:root{
+  --bg:#f4f6f8;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --line:#e5e7eb;
+  --shadow:0 8px 20px rgba(0,0,0,.08);
 
-      --ok:#49f5a6;
-      --warn:#ffd166;
-      --danger:#ff6b6b;
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:
-        radial-gradient(1200px 600px at 20% -10%, rgba(110,168,255,.25), transparent 55%),
-        radial-gradient(900px 500px at 90% 0%, rgba(73,245,166,.12), transparent 60%),
-        var(--bg);
-      color:var(--text);
-    }
-    .wrap{max-width:1100px;margin:0 auto;padding:16px}
-    .top{
-      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-    .brand{display:flex;gap:10px;align-items:center}
-    .logo{
-      width:38px;height:38px;border-radius:12px;
-      background: linear-gradient(135deg, rgba(110,168,255,.9), rgba(73,245,166,.9));
-      box-shadow: var(--shadow);
-    }
-    h1{font-size:18px;margin:0}
-    .sub{font-size:12px;color:var(--muted);margin-top:3px}
+  --primary:#2563eb;        /* azul escuro reserva */
+  --primary-soft:#93c5fd;   /* intervalo */
+  --primary-edge:#1e40af;   /* início/fim */
+}
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:16px;
-    }
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+*{box-sizing:border-box}
 
-    .card{
-      background: linear-gradient(180deg, rgba(17,26,46,.98), rgba(15,24,48,.98));
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .card-h{
-      padding:14px 14px 10px 14px;
-      border-bottom:1px solid var(--line);
-      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-    }
-    .card-h strong{font-size:14px}
-    .card-h span{font-size:12px;color:var(--muted)}
-    .card-b{padding:14px}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    .btn{
-      appearance:none;border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
-      padding:10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      transition: transform .06s ease, background .2s ease, border-color .2s ease;
-      font-weight:700;
-      font-size:13px;
-      user-select:none;
-      display:inline-flex;align-items:center;gap:8px;
-    }
-    .btn:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18)}
-    .btn:active{transform: scale(.98)}
-    .btn.primary{background: rgba(110,168,255,.16); border-color: rgba(110,168,255,.40)}
-    .btn.primary:hover{background: rgba(110,168,255,.22)}
-    .btn.danger{background: rgba(255,107,107,.10); border-color: rgba(255,107,107,.35)}
-    .btn.danger:hover{background: rgba(255,107,107,.16)}
-    .btn.small{padding:8px 10px;border-radius:10px;font-size:12px}
+.wrap{
+  max-width:100%;
+  padding:12px;
+}
 
-    /* Calendar */
-    .calHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-    .monthLabel{font-weight:800; letter-spacing:.3px; text-transform:capitalize}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-    .dow{
-      font-size:11px;color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.12em;
-      padding:6px 2px;
-      text-align:center;
-    }
-    .day{
-      min-height:78px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background: rgba(255,255,255,.03);
-      padding:8px;
-      cursor:pointer;
-      transition: background .2s ease, border-color .2s ease, transform .06s ease;
-      position:relative;
-      overflow:hidden;
-      user-select:none;
-    }
-    .day:hover{background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.18)}
-    .day:active{transform: scale(.99)}
-    .day.muted{opacity:.45; cursor:default}
-    .num{font-weight:900;font-size:12px}
-    .todayDot{
-      position:absolute;top:8px;right:8px;
-      width:8px;height:8px;border-radius:99px;
-      background: var(--ok);
-      box-shadow: 0 0 0 4px rgba(73,245,166,.14);
-    }
+.card{
+  background:var(--card);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:14px;
+  margin-bottom:14px;
+}
 
-    /* Range + reserved states */
-    .day.range{background: var(--blueSoft); border-color: rgba(110,168,255,.35)}
-    .day.edge{outline:2px solid rgba(110,168,255,.55); background: rgba(110,168,255,.10)}
-    .day.reserved{background: rgba(37,99,235,.22); border-color: rgba(37,99,235,.55)}
-    .day.reserved .num{color:#fff}
-    .day.reserved.range{background: rgba(37,99,235,.28)} /* when selecting over reserved */
+h1{
+  font-size:18px;
+  margin:0;
+}
+.sub{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:4px;
+}
 
-    .badges{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
-    .badge{
-      font-size:11px;padding:4px 7px;border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color: var(--text);
-    }
-    .badge.t{border-color: rgba(110,168,255,.45); background: rgba(110,168,255,.12)}
-    .badge.s{border-color: rgba(73,245,166,.35); background: rgba(73,245,166,.10)}
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
 
-    /* Form */
-    .form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media (max-width: 560px){ .form{grid-template-columns:1fr} }
-    label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted)}
-    input, select{
-      width:100%;
-      padding:10px 12px;
-      border-radius: 12px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.15);
-      color: var(--text);
-      outline:none;
-      font-size:14px;
-    }
-    input:focus, select:focus{
-      border-color: rgba(110,168,255,.55);
-      box-shadow: 0 0 0 4px rgba(110,168,255,.12);
-    }
-    .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px}
-    .hint{font-size:12px;color:var(--muted);line-height:1.35;margin-top:8px}
-    .toast{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius: 14px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      display:none;
-      font-size:13px;
-    }
-    .toast.show{display:block}
-    .toast.ok{border-color: rgba(73,245,166,.35); background: rgba(73,245,166,.10)}
-    .toast.err{border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.12)}
-    .toast.warn{border-color: rgba(255,209,102,.38); background: rgba(255,209,102,.12)}
+.btn{
+  border:1px solid var(--line);
+  background:#fff;
+  padding:10px 14px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+}
+.btn.primary{
+  background:var(--primary);
+  color:#fff;
+  border-color:var(--primary);
+}
+.btn.danger{
+  color:#dc2626;
+  border-color:#fecaca;
+  background:#fff5f5;
+}
 
-    /* List */
-    .list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .item{
-      border:1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,.03);
-      padding:12px;
-      display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
-      align-items:flex-start;
-    }
-    .item strong{font-size:13px}
-    .meta{font-size:12px;color:var(--muted);margin-top:4px}
-    .mini{
-      padding:8px 10px;border-radius:10px;font-size:12px;
-      border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color:var(--text);
-      cursor:pointer;
-      font-weight:800;
-    }
-    .mini:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18)}
-    .mini.danger{background: rgba(255,107,107,.10); border-color: rgba(255,107,107,.35)}
-    .mini.danger:hover{background: rgba(255,107,107,.16)}
-  </style>
+.calendar-card{padding:12px}
+
+.calHead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.monthLabel{
+  font-weight:700;
+  font-size:15px;
+  text-transform:capitalize;
+}
+
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+}
+
+.dow{
+  text-align:center;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.day{
+  min-height:56px;
+  border-radius:12px;
+  background:#f1f5f9;
+  text-align:center;
+  padding-top:6px;
+  cursor:pointer;
+  position:relative;
+  font-weight:600;
+}
+
+.day.muted{
+  opacity:.35;
+  cursor:default;
+}
+
+.day.reserved{
+  background:var(--primary);
+  color:#fff;
+}
+
+.day.range{
+  background:var(--primary-soft);
+  color:#000;
+}
+
+.day.edge{
+  background:var(--primary-edge);
+  color:#fff;
+}
+
+.num{
+  font-size:14px;
+}
+
+.todayDot{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:6px;
+  height:6px;
+  background:#16a34a;
+  border-radius:50%;
+}
+
+.form{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+label{
+  font-size:13px;
+  color:var(--muted);
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+input,select{
+  padding:12px;
+  font-size:15px;
+  border-radius:12px;
+  border:1px solid var(--line);
+}
+
+.list{
+  margin-top:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.item{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  font-size:14px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.small{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.mini{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #fecaca;
+  background:#fff5f5;
+  color:#dc2626;
+  font-size:13px;
+  cursor:pointer;
+}
+
+/* Desktop */
+@media (min-width:768px){
+  .wrap{max-width:1000px;margin:auto}
+  .grid{
+    display:grid;
+    grid-template-columns:1.2fr .8fr;
+    gap:14px;
+  }
+}
+</style>
 </head>
 
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>Reserva de Carros</h1>
-          <div class="sub">Selecione um período (ex.: 23/01 até 27/01) • dias reservados ficam azuis</div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn small primary" id="todayBtn">Hoje</button>
-        <button class="btn small danger" id="clearBtn">Limpar tudo</button>
-      </div>
+<div class="wrap">
+  <div class="card top">
+    <div>
+      <h1>Reserva de Carros</h1>
+      <div class="sub">Selecione o período no calendário</div>
     </div>
-
-    <div class="grid">
-      <!-- CALENDÁRIO -->
-      <section class="card">
-        <div class="card-h">
-          <div>
-            <strong>Calendário</strong><br>
-            <span>Clique 1x (início) e 2x (fim)</span>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <button class="btn small" id="prevBtn">◀</button>
-            <div class="monthLabel" id="monthLabel"></div>
-            <button class="btn small" id="nextBtn">▶</button>
-          </div>
-        </div>
-
-        <div class="card-b">
-          <div class="cal-grid" id="dow"></div>
-          <div class="cal-grid" id="cal"></div>
-
-          <div class="hint">
-            Legenda: <span class="badge t">T</span> Triton • <span class="badge s">S</span> Strada •
-            <span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:rgba(37,99,235,.35);border:1px solid rgba(37,99,235,.55);vertical-align:-1px;margin:0 6px"></span>
-            reservado
-          </div>
-        </div>
-      </section>
-
-      <!-- FORM + LISTA -->
-      <section class="card">
-        <div class="card-h">
-          <div>
-            <strong>Nova reserva</strong><br>
-            <span id="selLabel">Selecione um período no calendário</span>
-          </div>
-        </div>
-
-        <div class="card-b">
-          <form id="form">
-            <div class="form">
-              <label>
-                Carro
-                <select id="car" required>
-                  <option value="Triton">Triton</option>
-                  <option value="Strada">Strada</option>
-                </select>
-              </label>
-
-              <label>
-                Quem vai usar
-                <input id="who" placeholder="Ex.: Vinícius" required />
-              </label>
-
-              <label>
-                Data inicial
-                <input id="startDate" type="date" readonly />
-              </label>
-
-              <label>
-                Data final
-                <input id="endDate" type="date" readonly />
-              </label>
-            </div>
-
-            <div class="actions">
-              <button class="btn primary" type="submit">Salvar reserva</button>
-              <button class="btn" type="button" id="resetBtn">Limpar seleção</button>
-            </div>
-
-            <div class="toast" id="toast"></div>
-          </form>
-
-          <div style="height:12px"></div>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-            <strong style="font-size:14px">Reservas do mês</strong>
-            <span class="sub" id="countLabel">0 item(ns)</span>
-          </div>
-
-          <div class="list" id="list"></div>
-        </div>
-      </section>
-    </div>
+    <button class="btn danger" id="clearBtn">Limpar tudo</button>
   </div>
 
+  <div class="grid">
+    <div class="card calendar-card">
+      <div class="calHead">
+        <button class="btn" id="prevBtn">◀</button>
+        <div class="monthLabel" id="monthLabel"></div>
+        <button class="btn" id="nextBtn">▶</button>
+      </div>
+
+      <div class="cal-grid" id="dow"></div>
+      <div class="cal-grid" id="cal"></div>
+    </div>
+
+    <div class="card">
+      <div class="sub" id="selLabel">Selecione um período</div>
+
+      <form id="form" class="form">
+        <label>Carro
+          <select id="car">
+            <option>Triton</option>
+            <option>Strada</option>
+          </select>
+        </label>
+
+        <label>Quem vai usar
+          <input id="who" placeholder="Nome"/>
+        </label>
+
+        <label>Data inicial
+          <input id="startDate" readonly/>
+        </label>
+
+        <label>Data final
+          <input id="endDate" readonly/>
+        </label>
+
+        <button class="btn primary">Salvar reserva</button>
+      </form>
+
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+</div>
+
 <script>
-(() => {
-  const LS = "reservas_carros_range_v2";
-  const dowEl = document.getElementById("dow");
-  const calEl = document.getElementById("cal");
-  const monthLabel = document.getElementById("monthLabel");
-  const selLabel = document.getElementById("selLabel");
-  const countLabel = document.getElementById("countLabel");
-  const listEl = document.getElementById("list");
-  const toast = document.getElementById("toast");
+const LS="reserva_carros_mobile";
+const dowEl=document.getElementById("dow");
+const calEl=document.getElementById("cal");
+const monthLabel=document.getElementById("monthLabel");
+const selLabel=document.getElementById("selLabel");
+const listEl=document.getElementById("list");
+const startInp=document.getElementById("startDate");
+const endInp=document.getElementById("endDate");
+const clearBtn=document.getElementById("clearBtn");
 
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const todayBtn = document.getElementById("todayBtn");
-  const clearBtn = document.getElementById("clearBtn");
-  const resetBtn = document.getElementById("resetBtn");
+let view=new Date();
+let selStart=null, selEnd=null;
 
-  const form = document.getElementById("form");
-  const car = document.getElementById("car");
-  const who = document.getElementById("who");
-  const startDateInp = document.getElementById("startDate");
-  const endDateInp = document.getElementById("endDate");
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const br=d=>`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+const parse=s=>{const[a,b,c]=s.split("-");return new Date(a,b-1,c)};
 
-  const pad = (n) => String(n).padStart(2,"0");
-  const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const br = (d) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
-  const parseYMD = (s) => { const [Y,M,D]=s.split("-").map(Number); return new Date(Y, M-1, D); };
+const load=()=>JSON.parse(localStorage.getItem(LS)||"[]");
+const save=d=>localStorage.setItem(LS,JSON.stringify(d));
 
-  const uid = () => (crypto?.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
-
-  function load(){
-    try { return JSON.parse(localStorage.getItem(LS) || "[]"); }
-    catch { return []; }
-  }
-  function save(items){ localStorage.setItem(LS, JSON.stringify(items)); }
-
-  function show(kind, msg){
-    toast.className = "toast show " + (kind || "");
-    toast.textContent = msg;
-    clearTimeout(show._t);
-    show._t = setTimeout(() => { toast.className="toast"; toast.textContent=""; }, 3200);
-  }
-
-  function monthName(y,m){
-    const dt = new Date(y,m,1);
-    return dt.toLocaleDateString("pt-BR", {month:"long", year:"numeric"});
-  }
-
-  function sameDay(a,b){
-    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
-  }
-
-  function inInclusiveRange(key, start, end){
-    return key >= start && key <= end;
-  }
-
-  function overlapRange(aStart, aEnd, bStart, bEnd){
-    return aStart <= bEnd && bStart <= aEnd; // inclusive overlap
-  }
-
-  let view = new Date();
-  let viewY = view.getFullYear();
-  let viewM = view.getMonth();
-
-  let selStart = null; // "YYYY-MM-DD"
-  let selEnd = null;
-
-  function updateSelectionLabels(){
-    if(selStart && selEnd){
-      const a = parseYMD(selStart);
-      const b = parseYMD(selEnd);
-      selLabel.textContent = `Período: ${br(a)} até ${br(b)}`;
-      startDateInp.value = selStart;
-      endDateInp.value = selEnd;
-    } else if(selStart && !selEnd){
-      const a = parseYMD(selStart);
-      selLabel.textContent = `Início selecionado: ${br(a)} (clique no fim)`;
-      startDateInp.value = selStart;
-      endDateInp.value = "";
-    } else {
-      selLabel.textContent = "Selecione um período no calendário";
-      startDateInp.value = "";
-      endDateInp.value = "";
-    }
-  }
-
-  function renderDOW(){
-    const labels = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-    dowEl.innerHTML = labels.map(l => `<div class="dow">${l}</div>`).join("");
-  }
-
-  function countForDay(items, key){
-    const dayItems = items.filter(r => inInclusiveRange(key, r.start, r.end));
-    return {
-      t: dayItems.filter(r => r.car === "Triton").length,
-      s: dayItems.filter(r => r.car === "Strada").length,
-      any: dayItems.length
-    };
-  }
-
-  function renderCalendar(){
-    const items = load();
-    monthLabel.textContent = monthName(viewY, viewM);
-
-    const first = new Date(viewY, viewM, 1);
-    const startDow = first.getDay();
-    const daysInMonth = new Date(viewY, viewM+1, 0).getDate();
-
-    const cells = [];
-    // previous month days
-    const prevLast = new Date(viewY, viewM, 0).getDate();
-    for(let i=startDow; i>0; i--){
-      const d = new Date(viewY, viewM-1, prevLast - i + 1);
-      cells.push(dayCell(d, true, items));
-    }
-    // current month
-    for(let day=1; day<=daysInMonth; day++){
-      const d = new Date(viewY, viewM, day);
-      cells.push(dayCell(d, false, items));
-    }
-    // fill to complete weeks
-    while(cells.length % 7 !== 0){
-      const d = new Date(viewY, viewM, daysInMonth + (cells.length - (startDow + daysInMonth)) + 1);
-      cells.push(dayCell(d, true, items));
-    }
-
-    calEl.innerHTML = cells.join("");
-
-    calEl.querySelectorAll("[data-date]").forEach(el => {
-      if(el.dataset.muted === "1") return;
-      el.addEventListener("click", () => onPick(el.dataset.key));
-    });
-  }
-
-  function dayCell(d, muted, items){
-    const key = ymd(d);
-    const today = new Date();
-
-    const counts = countForDay(items, key);
-
-    const reserved = counts.any > 0;
-    const isEdge = (selStart && key === selStart) || (selEnd && key === selEnd);
-    const isRange = (selStart && selEnd && key > selStart && key < selEnd);
-
-    const classes = ["day"];
-    if(muted) classes.push("muted");
-    if(reserved) classes.push("reserved");
-    if(isRange) classes.push("range");
-    if(isEdge) classes.push("edge");
-
-    const dot = (!muted && sameDay(d, today)) ? `<span class="todayDot" title="Hoje"></span>` : "";
-    const badges = (!muted && counts.any) ? `
-      <div class="badges">
-        ${counts.t ? `<span class="badge t">T ${counts.t}</span>` : ``}
-        ${counts.s ? `<span class="badge s">S ${counts.s}</span>` : ``}
-      </div>` : "";
-
-    return `
-      <div class="${classes.join(" ")}" data-date="${d.toISOString()}" data-key="${key}" data-muted="${muted ? "1":"0"}">
-        ${dot}
-        <div class="num">${d.getDate()}</div>
-        ${badges}
-      </div>
-    `;
-  }
-
-  function onPick(key){
-    // click 1 = start, click 2 = end (or reset)
-    if(!selStart || (selStart && selEnd)){
-      selStart = key;
-      selEnd = null;
-    } else {
-      // second click defines end; swap if needed
-      if(key < selStart){
-        selEnd = selStart;
-        selStart = key;
-      } else {
-        selEnd = key;
-      }
-    }
-    updateSelectionLabels();
-    renderCalendar();
-    renderList();
-  }
-
-  function resetSelection(){
-    selStart = null;
-    selEnd = null;
-    updateSelectionLabels();
-    renderCalendar();
-  }
-
-  function renderList(){
-    const items = load()
-      .filter(r => {
-        // show only month items (any overlap with current month)
-        const monthStart = ymd(new Date(viewY, viewM, 1));
-        const monthEnd = ymd(new Date(viewY, viewM + 1, 0));
-        return overlapRange(r.start, r.end, monthStart, monthEnd);
-      })
-      .sort((a,b) => (a.start.localeCompare(b.start)));
-
-    countLabel.textContent = `${items.length} item(ns)`;
-
-    if(items.length === 0){
-      listEl.innerHTML = `<div style="color:var(--muted);font-size:12px">Nenhuma reserva neste mês.</div>`;
-      return;
-    }
-
-    listEl.innerHTML = items.map(r => `
-      <div class="item">
-        <div>
-          <strong>${esc(r.car)}</strong> — ${esc(r.who)}
-          <div class="meta">${esc(r.start)} até ${esc(r.end)}</div>
-        </div>
-        <div>
-          <button class="mini danger" data-del="${r.id}">Excluir</button>
-        </div>
-      </div>
-    `).join("");
-
-    listEl.querySelectorAll("[data-del]").forEach(btn => {
-      btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
-    });
-  }
-
-  function esc(s){
-    return (s ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function hasConflict(items, newItem){
-    // conflict only for same car if ranges overlap (inclusive)
-    return items.some(r =>
-      r.car === newItem.car &&
-      overlapRange(r.start, r.end, newItem.start, newItem.end)
-    );
-  }
-
-  function del(id){
-    const items = load();
-    const it = items.find(x => x.id === id);
-    if(!it) return;
-    if(!confirm(`Excluir reserva?\n${it.car} - ${it.who}\n${it.start} até ${it.end}`)) return;
-    save(items.filter(x => x.id !== id));
-    show("ok", "Reserva excluída.");
-    render();
-  }
-
-  function render(){
-    updateSelectionLabels();
-    renderCalendar();
-    renderList();
-  }
-
-  // Buttons
-  prevBtn.addEventListener("click", () => {
-    viewM--;
-    if(viewM < 0){ viewM = 11; viewY--; }
-    render();
+function renderDOW(){
+  ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach(d=>{
+    const el=document.createElement("div");
+    el.className="dow"; el.innerText=d; dowEl.appendChild(el);
   });
+}
 
-  nextBtn.addEventListener("click", () => {
-    viewM++;
-    if(viewM > 11){ viewM = 0; viewY++; }
-    render();
+function renderCalendar(){
+  calEl.innerHTML="";
+  monthLabel.innerText=view.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+  const y=view.getFullYear(), m=view.getMonth();
+  const first=new Date(y,m,1).getDay();
+  const days=new Date(y,m+1,0).getDate();
+  const data=load();
+
+  for(let i=0;i<first;i++){
+    const d=document.createElement("div");
+    d.className="day muted"; calEl.appendChild(d);
+  }
+
+  for(let i=1;i<=days;i++){
+    const d=new Date(y,m,i);
+    const key=ymd(d);
+    const div=document.createElement("div");
+    div.className="day";
+    div.innerHTML=`<div class="num">${i}</div>`;
+
+    if(data.some(r=>key>=r.start&&key<=r.end)) div.classList.add("reserved");
+    if(selStart&&selEnd&&key>selStart&&key<selEnd) div.classList.add("range");
+    if(key===selStart||key===selEnd) div.classList.add("edge");
+
+    div.onclick=()=>pick(key);
+    calEl.appendChild(div);
+  }
+}
+
+function pick(key){
+  if(!selStart||selEnd){selStart=key;selEnd=null}
+  else if(key<selStart){selEnd=selStart;selStart=key}
+  else selEnd=key;
+
+  startInp.value=selStart||"";
+  endInp.value=selEnd||"";
+  if(selStart&&selEnd){
+    selLabel.innerText=`Período: ${br(parse(selStart))} até ${br(parse(selEnd))}`;
+  }
+  renderCalendar();
+  renderList();
+}
+
+function renderList(){
+  listEl.innerHTML="";
+  load().forEach(r=>{
+    const div=document.createElement("div");
+    div.className="item";
+    div.innerHTML=`<div><strong>${r.car}</strong><br>
+    <span class="small">${r.who}</span><br>
+    <span class="small">${r.start} até ${r.end}</span></div>
+    <button class="mini" onclick="del('${r.id}')">Excluir</button>`;
+    listEl.appendChild(div);
   });
+}
 
-  todayBtn.addEventListener("click", () => {
-    const t = new Date();
-    viewY = t.getFullYear();
-    viewM = t.getMonth();
-    render();
-  });
+function del(id){
+  save(load().filter(r=>r.id!==id));
+  renderCalendar();renderList();
+}
 
-  clearBtn.addEventListener("click", () => {
-    if(!confirm("Apagar TODAS as reservas deste navegador?")) return;
-    localStorage.removeItem(LS);
-    show("ok", "Tudo limpo.");
-    resetSelection();
-    renderList();
-  });
+document.getElementById("form").onsubmit=e=>{
+  e.preventDefault();
+  if(!selStart||!selEnd)return alert("Selecione o período");
+  const who=document.getElementById("who").value;
+  const car=document.getElementById("car").value;
+  const data=load();
+  data.push({id:Date.now(),car,who,start:selStart,end:selEnd});
+  save(data);
+  selStart=selEnd=null;
+  document.getElementById("who").value="";
+  startInp.value=endInp.value="";
+  selLabel.innerText="Selecione um período";
+  renderCalendar();renderList();
+};
 
-  resetBtn.addEventListener("click", () => {
-    resetSelection();
-    show("warn", "Seleção limpa.");
-  });
+clearBtn.onclick=()=>{
+  if(confirm("Apagar tudo?")){localStorage.removeItem(LS);renderCalendar();renderList()}
+};
 
-  // Form submit
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const whoV = who.value.trim();
-    if(!whoV){ show("err", "Informe quem vai usar."); return; }
-    if(!selStart || !selEnd){ show("err", "Selecione o período no calendário (início e fim)."); return; }
-
-    const newItem = {
-      id: uid(),
-      car: car.value,
-      who: whoV,
-      start: selStart,
-      end: selEnd,
-      createdAt: new Date().toISOString()
-    };
-
-    const items = load();
-    if(hasConflict(items, newItem)){
-      show("err", `Conflito: ${newItem.car} já está reservado nesse período.`);
-      return;
-    }
-
-    items.push(newItem);
-    save(items);
-
-    who.value = "";
-    show("ok", "Reserva salva! Dias do período ficaram azuis.");
-    resetSelection();
-    render();
-  });
-
-  // Init
-  renderDOW();
-  render();
-})();
+renderDOW();
+renderCalendar();
+renderList();
 </script>
 </body>
 </html>
-"""
-
-path = Path("/mnt/data/index.html")
-path.write_text(html, encoding="utf-8")
-str(path)
-
