@@ -1,413 +1,189 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agendamento de Carros (Triton / Strada)</title>
-  <style>
-    :root{
-      --bg:#f4f6f8;
-      --card:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --blue:#2563eb;
-      --blue2:#1d4ed8;
-      --red:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family: Arial, Helvetica, sans-serif;background:var(--bg);color:var(--text);}
-    .wrap{max-width:980px;margin:0 auto;padding:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-    header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-    h1{font-size:18px;margin:0}
-    .sub{font-size:12px;color:var(--muted);margin-top:4px}
-    .row{display:flex;gap:12px;flex-wrap:wrap}
-    .col{flex:1;min-width:280px}
-    .calHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 12px 0}
-    .monthLabel{font-weight:700;text-transform:capitalize}
-    .btn{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px}
-    .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
-    .btn.primary:hover{background:var(--blue2)}
-    .btn.danger{background:#fff;border-color:#fecaca;color:var(--red)}
-    .btn.danger:hover{background:#fff5f5}
-    .grid7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-    .dow{font-size:11px;color:var(--muted);text-align:center;padding:6px 0;border-bottom:1px solid var(--line)}
-    .day{min-height:56px;border:1px solid var(--line);border-radius:10px;padding:8px;background:#fafafa;cursor:pointer;position:relative;user-select:none}
-    .day:hover{background:#f3f4f6}
-    .day.muted{opacity:.45;cursor:default}
-    .day.selected{outline:2px solid rgba(37,99,235,.35); background:#eff6ff}
-    .num{font-weight:800;font-size:12px}
-    .badge{margin-top:6px;font-size:11px;display:inline-block;padding:3px 6px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:#fff}
-    .badge.blue{border-color:rgba(37,99,235,.25); color:var(--blue)}
-    .form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
-    @media (max-width:640px){.form{grid-template-columns:1fr}}
-    label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
-    input, select{padding:10px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px;outline:none;background:#fff}
-    input:focus, select:focus{border-color:rgba(37,99,235,.55); box-shadow:0 0 0 4px rgba(37,99,235,.10)}
-    .actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
-    .toast{margin-top:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);display:none;font-size:13px;background:#fff}
-    .toast.show{display:block}
-    .toast.ok{border-color:rgba(16,185,129,.35); background:rgba(16,185,129,.08)}
-    .toast.err{border-color:rgba(239,68,68,.35); background:rgba(239,68,68,.08)}
-    .list{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
-    .item{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
-    .item strong{font-size:13px}
-    .meta{font-size:12px;color:var(--muted);margin-top:4px}
-    .smallBtns{display:flex;gap:8px;flex-wrap:wrap}
-    .mini{padding:7px 9px;border-radius:10px;font-size:12px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:700}
-    .mini.danger{border-color:#fecaca;color:var(--red)}
-  </style>
+<meta charset="UTF-8">
+<title>Agendamento de Carros – Triton / Strada</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f6f8;
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+}
+h1{text-align:center;margin-top:0}
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+  margin-bottom:20px;
+}
+.day{
+  padding:12px 0;
+  text-align:center;
+  border-radius:6px;
+  background:#e9ecef;
+  cursor:pointer;
+  font-weight:600;
+}
+.day:hover{background:#dbe1e6}
+.day.selected{background:#0d6efd;color:#fff}
+.day.in-range{background:#9ec5fe;color:#000}
+.day.reserved{background:#0d6efd;color:#fff}
+.form{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.form input,.form select,.form button{
+  padding:8px;
+  font-size:14px;
+}
+.form button{
+  grid-column:1/3;
+  background:#0d6efd;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+.form button:hover{background:#0b5ed7}
+.list{margin-top:20px}
+.item{
+  border-bottom:1px solid #ddd;
+  padding:6px 0;
+  font-size:14px;
+}
+.small{font-size:12px;color:#666}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <header>
-        <div>
-          <h1>Agendamento de Carros</h1>
-          <div class="sub">Apenas <b>Triton</b> e <b>Strada</b> • salva no navegador</div>
-        </div>
-        <div class="row">
-          <button class="btn" id="todayBtn">Hoje</button>
-          <button class="btn danger" id="clearBtn">Limpar tudo</button>
-        </div>
-      </header>
+<div class="container">
+<h1>Agendamento de Carros</h1>
 
-      <div class="row">
-        <div class="col">
-          <div class="calHead">
-            <button class="btn" id="prevBtn">◀</button>
-            <div class="monthLabel" id="monthLabel"></div>
-            <button class="btn" id="nextBtn">▶</button>
-          </div>
+<div id="calendar" class="calendar"></div>
 
-          <div class="grid7" id="dow"></div>
-          <div class="grid7" id="cal"></div>
+<div class="form">
+  <select id="car">
+    <option value="Triton">Triton</option>
+    <option value="Strada">Strada</option>
+  </select>
+  <input id="user" placeholder="Quem vai usar">
+  <button onclick="save()">Salvar Reserva</button>
+</div>
 
-          <div class="hint">
-            Clique em um dia para ver os agendamentos e criar novos.<br>
-            Regras: não permite <b>conflito de horário</b> no mesmo carro.
-          </div>
-        </div>
-
-        <div class="col">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
-            <div>
-              <div style="font-weight:800">Novo agendamento</div>
-              <div class="sub" id="selLabel">Dia selecionado: —</div>
-            </div>
-          </div>
-
-          <form id="form">
-            <div class="form">
-              <label>
-                Carro
-                <select id="car" required>
-                  <option value="Triton">Triton</option>
-                  <option value="Strada">Strada</option>
-                </select>
-              </label>
-
-              <label>
-                Quem vai usar
-                <input id="who" placeholder="Ex.: Vinícius" required />
-              </label>
-
-              <label>
-                Início
-                <input id="start" type="time" required />
-              </label>
-
-              <label>
-                Fim
-                <input id="end" type="time" required />
-              </label>
-            </div>
-
-            <div class="actions">
-              <button class="btn primary" type="submit">Salvar</button>
-            </div>
-
-            <div class="toast" id="toast"></div>
-          </form>
-
-          <div class="list">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-              <div style="font-weight:800">Agendamentos do dia</div>
-              <div class="sub" id="countLabel">0 item(ns)</div>
-            </div>
-            <div id="list"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="list">
+  <h3>Reservas do mês</h3>
+  <div id="list"></div>
+</div>
+</div>
 
 <script>
-(() => {
-  const LS = "agenda_carros_triton_strada_v1";
+const STORAGE = "agenda_carros_range";
+let startDate = null;
+let endDate = null;
+let viewDate = new Date();
 
-  const dowEl = document.getElementById("dow");
-  const calEl = document.getElementById("cal");
-  const monthLabel = document.getElementById("monthLabel");
-  const selLabel = document.getElementById("selLabel");
-  const countLabel = document.getElementById("countLabel");
-  const listEl = document.getElementById("list");
-  const toast = document.getElementById("toast");
+function load(){ return JSON.parse(localStorage.getItem(STORAGE) || "[]"); }
+function saveStorage(d){ localStorage.setItem(STORAGE, JSON.stringify(d)); }
 
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const todayBtn = document.getElementById("todayBtn");
-  const clearBtn = document.getElementById("clearBtn");
+function dateKey(d){
+  return d.toISOString().split("T")[0];
+}
 
-  const form = document.getElementById("form");
-  const car = document.getElementById("car");
-  const who = document.getElementById("who");
-  const start = document.getElementById("start");
-  const end = document.getElementById("end");
+function renderCalendar(){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+  const y = viewDate.getFullYear();
+  const m = viewDate.getMonth();
+  const days = new Date(y, m+1, 0).getDate();
+  const data = load();
 
-  const pad = n => String(n).padStart(2,"0");
-  const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const fmtBR = (d) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+  for(let d=1; d<=days; d++){
+    const date = new Date(y,m,d);
+    const key = dateKey(date);
+    const div = document.createElement("div");
+    div.className = "day";
+    div.textContent = d;
 
-  const timeToMin = (t) => {
-    const [h,m] = t.split(":").map(Number);
-    return h*60 + m;
-  };
-
-  const uid = () => (crypto?.randomUUID ? crypto.randomUUID() : (Date.now()+"-"+Math.random().toString(16).slice(2)));
-
-  function load(){
-    try { return JSON.parse(localStorage.getItem(LS) || "[]"); }
-    catch { return []; }
-  }
-  function save(items){ localStorage.setItem(LS, JSON.stringify(items)); }
-
-  function show(kind, msg){
-    toast.className = "toast show " + (kind || "");
-    toast.textContent = msg;
-    clearTimeout(show._t);
-    show._t = setTimeout(()=>{ toast.className="toast"; toast.textContent=""; }, 3200);
-  }
-
-  const today = new Date();
-  let viewY = today.getFullYear();
-  let viewM = today.getMonth();
-  let selected = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-  function monthName(y,m){
-    const dt = new Date(y,m,1);
-    return dt.toLocaleDateString("pt-BR", {month:"long", year:"numeric"});
-  }
-
-  function renderDOW(){
-    const labels = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-    dowEl.innerHTML = labels.map(l => `<div class="dow">${l}</div>`).join("");
-  }
-
-  function dayCountBadges(items, d){
-    const key = dateKey(d);
-    const dayItems = items.filter(x => x.date === key);
-    const t = dayItems.filter(x => x.car === "Triton").length;
-    const s = dayItems.filter(x => x.car === "Strada").length;
-
-    let out = "";
-    if(t) out += `<span class="badge blue" title="Triton">${t} T</span>`;
-    if(s) out += ` <span class="badge" title="Strada">${s} S</span>`;
-    return out ? `<div style="margin-top:6px">${out}</div>` : "";
-  }
-
-  function renderCalendar(){
-    const items = load();
-    monthLabel.textContent = monthName(viewY, viewM);
-
-    const first = new Date(viewY, viewM, 1);
-    const startDow = first.getDay();
-    const daysInMonth = new Date(viewY, viewM+1, 0).getDate();
-    const prevLast = new Date(viewY, viewM, 0).getDate();
-
-    const cells = [];
-
-    for(let i=startDow; i>0; i--){
-      const dayNum = prevLast - i + 1;
-      const d = new Date(viewY, viewM-1, dayNum);
-      cells.push(dayCell(d, true, items));
-    }
-    for(let day=1; day<=daysInMonth; day++){
-      const d = new Date(viewY, viewM, day);
-      cells.push(dayCell(d, false, items));
-    }
-    while(cells.length % 7 !== 0){
-      const d = new Date(viewY, viewM, daysInMonth + (cells.length - (startDow + daysInMonth)) + 1);
-      cells.push(dayCell(d, true, items));
+    // reservado
+    if(data.some(r => key >= r.start && key <= r.end)){
+      div.classList.add("reserved");
     }
 
-    calEl.innerHTML = cells.join("");
+    // seleção
+    if(startDate && dateKey(date) === startDate) div.classList.add("selected");
+    if(startDate && endDate && key > startDate && key < endDate) div.classList.add("in-range");
+    if(endDate && dateKey(date) === endDate) div.classList.add("selected");
 
-    calEl.querySelectorAll("[data-date]").forEach(el => {
-      if(el.dataset.muted === "1") return;
-      el.addEventListener("click", () => {
-        selected = new Date(el.dataset.date);
-        setDefaultTimes();
-        render();
-      });
-    });
-  }
-
-  function dayCell(d, muted, items){
-    const isSelected = !muted && d.toDateString() === selected.toDateString() && d.getMonth()===viewM && d.getFullYear()===viewY;
-    const cls = ["day", muted ? "muted":"", isSelected ? "selected":""].join(" ").trim();
-    const badges = dayCountBadges(items, d);
-    return `
-      <div class="${cls}" data-date="${d.toISOString()}" data-muted="${muted ? "1":"0"}">
-        <div class="num">${d.getDate()}</div>
-        ${badges}
-      </div>
-    `;
-  }
-
-  function setDefaultTimes(){
-    if(!start.value) start.value = "08:00";
-    if(!end.value) end.value = "12:00";
-  }
-
-  function renderList(){
-    const items = load().sort((a,b) => (a.startMin - b.startMin));
-    const key = dateKey(selected);
-    const dayItems = items.filter(x => x.date === key);
-
-    selLabel.textContent = `Dia selecionado: ${fmtBR(selected)}`;
-    countLabel.textContent = `${dayItems.length} item(ns)`;
-
-    if(dayItems.length === 0){
-      listEl.innerHTML = `<div class="meta">Nenhum agendamento para este dia.</div>`;
-      return;
-    }
-
-    listEl.innerHTML = dayItems.map(x => `
-      <div class="item">
-        <div>
-          <strong>${esc(x.car)}</strong> — ${esc(x.who)}
-          <div class="meta">${esc(x.start)} às ${esc(x.end)}</div>
-        </div>
-        <div class="smallBtns">
-          <button class="mini danger" data-del="${x.id}">Excluir</button>
-        </div>
-      </div>
-    `).join("");
-
-    listEl.querySelectorAll("[data-del]").forEach(btn => {
-      btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
-    });
-  }
-
-  function esc(s){
-    return (s ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function hasConflict(items, newItem){
-    return items.some(i =>
-      i.date === newItem.date &&
-      i.car === newItem.car &&
-      (newItem.startMin < i.endMin) &&
-      (newItem.endMin > i.startMin)
-    );
-  }
-
-  function del(id){
-    const items = load();
-    const it = items.find(x => x.id === id);
-    if(!it) return;
-    if(!confirm(`Excluir?
-${it.car} - ${it.who}
-${it.date} ${it.start} às ${it.end}`)) return;
-    save(items.filter(x => x.id !== id));
-    show("ok", "Agendamento excluído.");
-    render();
-  }
-
-  function render(){
-    renderCalendar();
-    renderList();
-  }
-
-  prevBtn.addEventListener("click", () => {
-    viewM--;
-    if(viewM < 0){ viewM = 11; viewY--; }
-    renderCalendar();
-  });
-  nextBtn.addEventListener("click", () => {
-    viewM++;
-    if(viewM > 11){ viewM = 0; viewY++; }
-    renderCalendar();
-  });
-  todayBtn.addEventListener("click", () => {
-    const t = new Date();
-    viewY = t.getFullYear();
-    viewM = t.getMonth();
-    selected = new Date(t.getFullYear(), t.getMonth(), t.getDate());
-    setDefaultTimes();
-    render();
-  });
-  clearBtn.addEventListener("click", () => {
-    if(!confirm("Apagar TODOS os agendamentos deste navegador?")) return;
-    localStorage.removeItem(LS);
-    show("ok", "Tudo limpo.");
-    render();
-  });
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const whoV = who.value.trim();
-    const startV = start.value;
-    const endV = end.value;
-
-    if(!whoV || !startV || !endV){
-      show("err", "Preencha tudo.");
-      return;
-    }
-    if(endV <= startV){
-      show("err", "Hora final deve ser maior que a inicial.");
-      return;
-    }
-
-    const item = {
-      id: uid(),
-      date: dateKey(selected),
-      car: car.value,
-      who: whoV,
-      start: startV,
-      end: endV,
-      startMin: timeToMin(startV),
-      endMin: timeToMin(endV),
-      createdAt: new Date().toISOString()
+    div.onclick = ()=>{
+      if(!startDate || (startDate && endDate)){
+        startDate = dateKey(date);
+        endDate = null;
+      }else{
+        if(dateKey(date) < startDate){
+          endDate = startDate;
+          startDate = dateKey(date);
+        }else{
+          endDate = dateKey(date);
+        }
+      }
+      renderCalendar();
     };
+    cal.appendChild(div);
+  }
+  renderList();
+}
 
-    const items = load();
-    if(hasConflict(items, item)){
-      show("err", "Conflito de horário para este carro.");
-      return;
-    }
-
-    items.push(item);
-    save(items);
-
-    who.value = "";
-    show("ok", "Agendamento salvo!");
-    render();
+function save(){
+  if(!startDate || !endDate){
+    alert("Selecione um período no calendário");
+    return;
+  }
+  const user = document.getElementById("user").value;
+  if(!user){
+    alert("Informe quem vai usar");
+    return;
+  }
+  const data = load();
+  data.push({
+    car: document.getElementById("car").value,
+    user,
+    start: startDate,
+    end: endDate
   });
+  saveStorage(data);
+  startDate = null;
+  endDate = null;
+  document.getElementById("user").value="";
+  renderCalendar();
+}
 
-  renderDOW();
-  setDefaultTimes();
-  render();
-})();
+function renderList(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  const data = load();
+  if(data.length===0){
+    list.innerHTML = "<div class='small'>Nenhuma reserva</div>";
+    return;
+  }
+  data.forEach(r=>{
+    const div = document.createElement("div");
+    div.className="item";
+    div.innerHTML = `<strong>${r.car}</strong> - ${r.user}<br>
+    <span class="small">${r.start} até ${r.end}</span>`;
+    list.appendChild(div);
+  });
+}
+
+renderCalendar();
 </script>
 </body>
 </html>
