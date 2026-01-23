@@ -73,11 +73,6 @@ h1{
   color:#fff;
   border-color:var(--primary);
 }
-.btn.danger{
-  color:#dc2626;
-  border-color:#fecaca;
-  background:#fff5f5;
-}
 
 .calendar-card{padding:12px}
 
@@ -86,6 +81,7 @@ h1{
   justify-content:space-between;
   align-items:center;
   margin-bottom:8px;
+  gap:10px;
 }
 
 .monthLabel{
@@ -115,6 +111,7 @@ h1{
   cursor:pointer;
   position:relative;
   font-weight:600;
+  user-select:none;
 }
 
 .day.muted{
@@ -170,6 +167,7 @@ input,select{
   font-size:15px;
   border-radius:12px;
   border:1px solid var(--line);
+  background:#fff;
 }
 
 .list{
@@ -187,6 +185,7 @@ input,select{
   display:flex;
   justify-content:space-between;
   gap:8px;
+  align-items:flex-start;
 }
 
 .small{
@@ -202,6 +201,7 @@ input,select{
   color:#dc2626;
   font-size:13px;
   cursor:pointer;
+  font-weight:700;
 }
 
 /* Desktop */
@@ -223,15 +223,14 @@ input,select{
       <h1>Reserva de Carros</h1>
       <div class="sub">Selecione o período no calendário</div>
     </div>
-    <button class="btn danger" id="clearBtn">Limpar tudo</button>
   </div>
 
   <div class="grid">
     <div class="card calendar-card">
       <div class="calHead">
-        <button class="btn" id="prevBtn">◀</button>
+        <button class="btn" id="prevBtn" type="button">◀</button>
         <div class="monthLabel" id="monthLabel"></div>
-        <button class="btn" id="nextBtn">▶</button>
+        <button class="btn" id="nextBtn" type="button">▶</button>
       </div>
 
       <div class="cal-grid" id="dow"></div>
@@ -261,7 +260,7 @@ input,select{
           <input id="endDate" readonly/>
         </label>
 
-        <button class="btn primary">Salvar reserva</button>
+        <button class="btn primary" type="submit">Salvar reserva</button>
       </form>
 
       <div class="list" id="list"></div>
@@ -270,117 +269,199 @@ input,select{
 </div>
 
 <script>
-const LS="reserva_carros_mobile";
-const dowEl=document.getElementById("dow");
-const calEl=document.getElementById("cal");
-const monthLabel=document.getElementById("monthLabel");
-const selLabel=document.getElementById("selLabel");
-const listEl=document.getElementById("list");
-const startInp=document.getElementById("startDate");
-const endInp=document.getElementById("endDate");
-const clearBtn=document.getElementById("clearBtn");
+(() => {
+  const LS="reserva_carros_mobile";
 
-let view=new Date();
-let selStart=null, selEnd=null;
+  const dowEl=document.getElementById("dow");
+  const calEl=document.getElementById("cal");
+  const monthLabel=document.getElementById("monthLabel");
+  const selLabel=document.getElementById("selLabel");
+  const listEl=document.getElementById("list");
+  const startInp=document.getElementById("startDate");
+  const endInp=document.getElementById("endDate");
 
-const pad=n=>String(n).padStart(2,"0");
-const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-const br=d=>`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
-const parse=s=>{const[a,b,c]=s.split("-");return new Date(a,b-1,c)};
+  const prevBtn=document.getElementById("prevBtn");
+  const nextBtn=document.getElementById("nextBtn");
 
-const load=()=>JSON.parse(localStorage.getItem(LS)||"[]");
-const save=d=>localStorage.setItem(LS,JSON.stringify(d));
+  let view=new Date();
+  view = new Date(view.getFullYear(), view.getMonth(), 1); // sempre no 1º dia do mês
+  let selStart=null, selEnd=null;
 
-function renderDOW(){
-  ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach(d=>{
-    const el=document.createElement("div");
-    el.className="dow"; el.innerText=d; dowEl.appendChild(el);
+  const pad=n=>String(n).padStart(2,"0");
+  const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const br=d=>`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
+  const parse=s=>{const [Y,M,D]=s.split("-").map(Number); return new Date(Y, M-1, D);};
+
+  const load=()=>JSON.parse(localStorage.getItem(LS)||"[]");
+  const save=d=>localStorage.setItem(LS,JSON.stringify(d));
+
+  function renderDOW(){
+    dowEl.innerHTML = "";
+    ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach(d=>{
+      const el=document.createElement("div");
+      el.className="dow"; el.innerText=d; dowEl.appendChild(el);
+    });
+  }
+
+  function renderCalendar(){
+    calEl.innerHTML="";
+    monthLabel.innerText=view.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+    const y=view.getFullYear(), m=view.getMonth();
+    const firstDow=new Date(y,m,1).getDay();
+    const days=new Date(y,m+1,0).getDate();
+    const data=load();
+
+    // blanks
+    for(let i=0;i<firstDow;i++){
+      const d=document.createElement("div");
+      d.className="day muted";
+      calEl.appendChild(d);
+    }
+
+    for(let i=1;i<=days;i++){
+      const d=new Date(y,m,i);
+      const key=ymd(d);
+      const div=document.createElement("div");
+      div.className="day";
+      div.innerHTML=`<div class="num">${i}</div>`;
+
+      // bolinha "hoje"
+      const today = new Date();
+      if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
+        const dot = document.createElement("span");
+        dot.className="todayDot";
+        div.appendChild(dot);
+      }
+
+      // reservado (qualquer carro)
+      if(data.some(r=>key>=r.start && key<=r.end)) div.classList.add("reserved");
+
+      // seleção por intervalo
+      if(selStart && selEnd && key>selStart && key<selEnd) div.classList.add("range");
+      if(key===selStart || key===selEnd) div.classList.add("edge");
+
+      div.onclick=()=>pick(key);
+      calEl.appendChild(div);
+    }
+  }
+
+  function pick(key){
+    if(!selStart || selEnd){
+      selStart=key; selEnd=null;
+    } else if(key < selStart){
+      selEnd=selStart; selStart=key;
+    } else {
+      selEnd=key;
+    }
+
+    startInp.value = selStart || "";
+    endInp.value = selEnd || "";
+
+    if(selStart && selEnd){
+      selLabel.innerText = `Período: ${br(parse(selStart))} até ${br(parse(selEnd))}`;
+    } else if(selStart){
+      selLabel.innerText = `Início: ${br(parse(selStart))} (clique no fim)`;
+    } else {
+      selLabel.innerText = "Selecione um período";
+    }
+
+    renderCalendar();
+    renderList();
+  }
+
+  function renderList(){
+    listEl.innerHTML="";
+    const data = load().slice().sort((a,b)=> (a.start.localeCompare(b.start)));
+
+    if(!data.length){
+      listEl.innerHTML = `<div class="small">Nenhuma reserva ainda.</div>`;
+      return;
+    }
+
+    data.forEach(r=>{
+      const div=document.createElement("div");
+      div.className="item";
+      div.innerHTML=`<div>
+        <strong>${escapeHtml(r.car)}</strong><br>
+        <span class="small">${escapeHtml(r.who || "")}</span><br>
+        <span class="small">${r.start} até ${r.end}</span>
+      </div>
+      <button class="mini" type="button" data-del="${r.id}">Excluir</button>`;
+      listEl.appendChild(div);
+    });
+
+    listEl.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
+    });
+  }
+
+  function escapeHtml(s){
+    return (s ?? "").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function rangesOverlap(aStart,aEnd,bStart,bEnd){
+    return aStart <= bEnd && bStart <= aEnd; // inclusivo
+  }
+
+  function del(id){
+    const all = load();
+    const it = all.find(x=> String(x.id)===String(id));
+    if(!it) return;
+    if(!confirm(`Excluir reserva?
+${it.car} - ${it.who}
+${it.start} até ${it.end}`)) return;
+    save(all.filter(r=> String(r.id)!==String(id)));
+    renderCalendar();
+    renderList();
+  }
+
+  // Fix: Prev/Next month buttons
+  prevBtn.addEventListener("click", () => {
+    view = new Date(view.getFullYear(), view.getMonth()-1, 1);
+    renderCalendar();
   });
-}
+  nextBtn.addEventListener("click", () => {
+    view = new Date(view.getFullYear(), view.getMonth()+1, 1);
+    renderCalendar();
+  });
 
-function renderCalendar(){
-  calEl.innerHTML="";
-  monthLabel.innerText=view.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
-  const y=view.getFullYear(), m=view.getMonth();
-  const first=new Date(y,m,1).getDay();
-  const days=new Date(y,m+1,0).getDate();
-  const data=load();
+  document.getElementById("form").addEventListener("submit", (e)=>{
+    e.preventDefault();
 
-  for(let i=0;i<first;i++){
-    const d=document.createElement("div");
-    d.className="day muted"; calEl.appendChild(d);
-  }
+    if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
+    const whoV = document.getElementById("who").value.trim();
+    if(!whoV) return alert("Informe quem vai usar.");
 
-  for(let i=1;i<=days;i++){
-    const d=new Date(y,m,i);
-    const key=ymd(d);
-    const div=document.createElement("div");
-    div.className="day";
-    div.innerHTML=`<div class="num">${i}</div>`;
+    const carV = document.getElementById("car").value;
+    const data = load();
 
-    if(data.some(r=>key>=r.start&&key<=r.end)) div.classList.add("reserved");
-    if(selStart&&selEnd&&key>selStart&&key<selEnd) div.classList.add("range");
-    if(key===selStart||key===selEnd) div.classList.add("edge");
+    // conflito por carro (sobreposição de datas)
+    const conflict = data.some(r => r.car===carV && rangesOverlap(r.start, r.end, selStart, selEnd));
+    if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
 
-    div.onclick=()=>pick(key);
-    calEl.appendChild(div);
-  }
-}
+    data.push({id: Date.now(), car: carV, who: whoV, start: selStart, end: selEnd});
+    save(data);
 
-function pick(key){
-  if(!selStart||selEnd){selStart=key;selEnd=null}
-  else if(key<selStart){selEnd=selStart;selStart=key}
-  else selEnd=key;
+    // reset selection
+    selStart = null; selEnd = null;
+    document.getElementById("who").value="";
+    startInp.value = ""; endInp.value = "";
+    selLabel.innerText = "Selecione um período";
 
-  startInp.value=selStart||"";
-  endInp.value=selEnd||"";
-  if(selStart&&selEnd){
-    selLabel.innerText=`Período: ${br(parse(selStart))} até ${br(parse(selEnd))}`;
-  }
+    renderCalendar();
+    renderList();
+  });
+
+  // Init
+  renderDOW();
   renderCalendar();
   renderList();
-}
-
-function renderList(){
-  listEl.innerHTML="";
-  load().forEach(r=>{
-    const div=document.createElement("div");
-    div.className="item";
-    div.innerHTML=`<div><strong>${r.car}</strong><br>
-    <span class="small">${r.who}</span><br>
-    <span class="small">${r.start} até ${r.end}</span></div>
-    <button class="mini" onclick="del('${r.id}')">Excluir</button>`;
-    listEl.appendChild(div);
-  });
-}
-
-function del(id){
-  save(load().filter(r=>r.id!==id));
-  renderCalendar();renderList();
-}
-
-document.getElementById("form").onsubmit=e=>{
-  e.preventDefault();
-  if(!selStart||!selEnd)return alert("Selecione o período");
-  const who=document.getElementById("who").value;
-  const car=document.getElementById("car").value;
-  const data=load();
-  data.push({id:Date.now(),car,who,start:selStart,end:selEnd});
-  save(data);
-  selStart=selEnd=null;
-  document.getElementById("who").value="";
-  startInp.value=endInp.value="";
-  selLabel.innerText="Selecione um período";
-  renderCalendar();renderList();
-};
-
-clearBtn.onclick=()=>{
-  if(confirm("Apagar tudo?")){localStorage.removeItem(LS);renderCalendar();renderList()}
-};
-
-renderDOW();
-renderCalendar();
-renderList();
+})();
 </script>
 </body>
 </html>
