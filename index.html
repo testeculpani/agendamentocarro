@@ -14,9 +14,12 @@
   --line:#e5e7eb;
   --shadow:0 8px 20px rgba(0,0,0,.08);
 
-  --primary:#2563eb;        /* azul escuro reserva */
-  --primary-soft:#93c5fd;   /* intervalo */
-  --primary-edge:#1e40af;   /* início/fim */
+  /* Cores (mais "fracas") */
+  --primary:#3b82f6;          /* reservado (mais claro que antes) */
+  --primary-edge:#1e40af;     /* início/fim */
+  --primary-soft:#cfe3ff;     /* intervalo selecionado */
+  --day:#f3f6fb;              /* quadrado padrão (mais suave) */
+  --dayHover:#eaf0fa;
 }
 
 *{box-sizing:border-box}
@@ -41,15 +44,8 @@ body{
   margin-bottom:14px;
 }
 
-h1{
-  font-size:18px;
-  margin:0;
-}
-.sub{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:4px;
-}
+h1{font-size:18px;margin:0}
+.sub{font-size:13px;color:var(--muted);margin-top:4px}
 
 .top{
   display:flex;
@@ -105,19 +101,19 @@ h1{
 .day{
   min-height:56px;
   border-radius:12px;
-  background:#f1f5f9;
+  background:var(--day);
   text-align:center;
   padding-top:6px;
   cursor:pointer;
   position:relative;
-  font-weight:600;
+  font-weight:650;
   user-select:none;
+  transition: background .12s ease, transform .06s ease;
 }
+.day:hover{background:var(--dayHover)}
+.day:active{transform:scale(.99)}
 
-.day.muted{
-  opacity:.35;
-  cursor:default;
-}
+.day.muted{opacity:.35;cursor:default}
 
 .day.reserved{
   background:var(--primary);
@@ -126,7 +122,7 @@ h1{
 
 .day.range{
   background:var(--primary-soft);
-  color:#000;
+  color:#0b1220;
 }
 
 .day.edge{
@@ -134,9 +130,7 @@ h1{
   color:#fff;
 }
 
-.num{
-  font-size:14px;
-}
+.num{font-size:14px}
 
 .todayDot{
   position:absolute;
@@ -162,13 +156,14 @@ label{
   gap:4px;
 }
 
-input,select{
+input,select,textarea{
   padding:12px;
   font-size:15px;
   border-radius:12px;
   border:1px solid var(--line);
   background:#fff;
 }
+textarea{min-height:80px;resize:vertical}
 
 .list{
   margin-top:12px;
@@ -184,13 +179,14 @@ input,select{
   font-size:14px;
   display:flex;
   justify-content:space-between;
-  gap:8px;
+  gap:10px;
   align-items:flex-start;
 }
 
 .small{
   font-size:12px;
   color:var(--muted);
+  line-height:1.35;
 }
 
 .mini{
@@ -204,6 +200,60 @@ input,select{
   font-weight:700;
 }
 
+/* Modal */
+.modalWrap{
+  position:fixed;
+  inset:0;
+  background: rgba(0,0,0,.45);
+  display:none;
+  align-items:flex-end; /* bottom sheet no celular */
+  justify-content:center;
+  padding:12px;
+  z-index:999;
+}
+.modalWrap.show{display:flex}
+.modal{
+  width:min(720px, 100%);
+  background:#fff;
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+.modalH{
+  padding:14px 14px 10px 14px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+.modalTitle{font-weight:800}
+.modalBody{padding:14px}
+.modalClose{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:12px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-weight:700;
+}
+.modalCard{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+}
+.tag{
+  display:inline-block;
+  font-size:12px;
+  font-weight:800;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#1e40af;
+  margin-bottom:8px;
+}
+
 /* Desktop */
 @media (min-width:768px){
   .wrap{max-width:1000px;margin:auto}
@@ -212,6 +262,7 @@ input,select{
     grid-template-columns:1.2fr .8fr;
     gap:14px;
   }
+  .modalWrap{align-items:center} /* desktop centraliza */
 }
 </style>
 </head>
@@ -221,7 +272,7 @@ input,select{
   <div class="card top">
     <div>
       <h1>Reserva de Carros</h1>
-      <div class="sub">Selecione o período no calendário</div>
+      <div class="sub">Clique em um dia para ver detalhes • Clique 1x início e 2x fim para reservar</div>
     </div>
   </div>
 
@@ -252,6 +303,10 @@ input,select{
           <input id="who" placeholder="Nome"/>
         </label>
 
+        <label>Motivo
+          <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
+        </label>
+
         <label>Data inicial
           <input id="startDate" readonly/>
         </label>
@@ -268,9 +323,23 @@ input,select{
   </div>
 </div>
 
+<!-- MODAL -->
+<div class="modalWrap" id="modalWrap" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modalH">
+      <div>
+        <div class="modalTitle" id="modalTitle">Detalhes</div>
+        <div class="small" id="modalSub"></div>
+      </div>
+      <button class="modalClose" id="modalClose" type="button">Fechar</button>
+    </div>
+    <div class="modalBody" id="modalBody"></div>
+  </div>
+</div>
+
 <script>
 (() => {
-  const LS="reserva_carros_mobile";
+  const LS="reserva_carros_mobile_v2";
 
   const dowEl=document.getElementById("dow");
   const calEl=document.getElementById("cal");
@@ -283,17 +352,32 @@ input,select{
   const prevBtn=document.getElementById("prevBtn");
   const nextBtn=document.getElementById("nextBtn");
 
+  // Modal
+  const modalWrap = document.getElementById("modalWrap");
+  const modalClose = document.getElementById("modalClose");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalSub = document.getElementById("modalSub");
+  const modalBody = document.getElementById("modalBody");
+
   let view=new Date();
-  view = new Date(view.getFullYear(), view.getMonth(), 1); // sempre no 1º dia do mês
+  view = new Date(view.getFullYear(), view.getMonth(), 1); // 1º dia do mês
   let selStart=null, selEnd=null;
 
   const pad=n=>String(n).padStart(2,"0");
   const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const br=d=>`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
-  const parse=s=>{const [Y,M,D]=s.split("-").map(Number); return new Date(Y, M-1, D);};
+  const brFromYmd=(s)=>{ const [Y,M,D]=s.split("-").map(Number); return `${pad(D)}/${pad(M)}/${Y}`; };
 
   const load=()=>JSON.parse(localStorage.getItem(LS)||"[]");
   const save=d=>localStorage.setItem(LS,JSON.stringify(d));
+
+  function escapeHtml(s){
+    return (s ?? "").toString()
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
 
   function renderDOW(){
     dowEl.innerHTML = "";
@@ -325,7 +409,7 @@ input,select{
       div.className="day";
       div.innerHTML=`<div class="num">${i}</div>`;
 
-      // bolinha "hoje"
+      // "Hoje"
       const today = new Date();
       if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
         const dot = document.createElement("span");
@@ -334,13 +418,18 @@ input,select{
       }
 
       // reservado (qualquer carro)
-      if(data.some(r=>key>=r.start && key<=r.end)) div.classList.add("reserved");
+      const anyReserved = data.some(r => key>=r.start && key<=r.end);
+      if(anyReserved) div.classList.add("reserved");
 
-      // seleção por intervalo
+      // seleção
       if(selStart && selEnd && key>selStart && key<selEnd) div.classList.add("range");
       if(key===selStart || key===selEnd) div.classList.add("edge");
 
-      div.onclick=()=>pick(key);
+      div.addEventListener("click", () => {
+        pick(key);
+        openDayModal(key);
+      });
+
       calEl.appendChild(div);
     }
   }
@@ -358,9 +447,9 @@ input,select{
     endInp.value = selEnd || "";
 
     if(selStart && selEnd){
-      selLabel.innerText = `Período: ${br(parse(selStart))} até ${br(parse(selEnd))}`;
+      selLabel.innerText = `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
     } else if(selStart){
-      selLabel.innerText = `Início: ${br(parse(selStart))} (clique no fim)`;
+      selLabel.innerText = `Início: ${brFromYmd(selStart)} (clique no fim)`;
     } else {
       selLabel.innerText = "Selecione um período";
     }
@@ -368,6 +457,40 @@ input,select{
     renderCalendar();
     renderList();
   }
+
+  function openDayModal(key){
+    const data = load();
+    const dayRes = data.filter(r => key>=r.start && key<=r.end)
+                      .sort((a,b)=> (a.car.localeCompare(b.car) || a.start.localeCompare(b.start)));
+
+    modalTitle.textContent = "Reservas do dia";
+    modalSub.textContent = brFromYmd(key);
+
+    if(!dayRes.length){
+      modalBody.innerHTML = `<div class="small">Nenhuma reserva para este dia.</div>`;
+    } else {
+      modalBody.innerHTML = dayRes.map(r => `
+        <div class="modalCard">
+          <div class="tag">${escapeHtml(r.car)}</div>
+          <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
+          <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
+          ${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
+        </div>
+      `).join("");
+    }
+
+    modalWrap.classList.add("show");
+    modalWrap.setAttribute("aria-hidden", "false");
+  }
+
+  function closeModal(){
+    modalWrap.classList.remove("show");
+    modalWrap.setAttribute("aria-hidden", "true");
+  }
+
+  modalClose.addEventListener("click", closeModal);
+  modalWrap.addEventListener("click", (e) => { if(e.target === modalWrap) closeModal(); });
+  document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
 
   function renderList(){
     listEl.innerHTML="";
@@ -383,8 +506,9 @@ input,select{
       div.className="item";
       div.innerHTML=`<div>
         <strong>${escapeHtml(r.car)}</strong><br>
-        <span class="small">${escapeHtml(r.who || "")}</span><br>
-        <span class="small">${r.start} até ${r.end}</span>
+        <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span><br>
+        <span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
+        ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
       </div>
       <button class="mini" type="button" data-del="${r.id}">Excluir</button>`;
       listEl.appendChild(div);
@@ -393,15 +517,6 @@ input,select{
     listEl.querySelectorAll("[data-del]").forEach(btn=>{
       btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
     });
-  }
-
-  function escapeHtml(s){
-    return (s ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
   }
 
   function rangesOverlap(aStart,aEnd,bStart,bEnd){
@@ -420,7 +535,7 @@ ${it.start} até ${it.end}`)) return;
     renderList();
   }
 
-  // Fix: Prev/Next month buttons
+  // Botões mês
   prevBtn.addEventListener("click", () => {
     view = new Date(view.getFullYear(), view.getMonth()-1, 1);
     renderCalendar();
@@ -430,6 +545,7 @@ ${it.start} até ${it.end}`)) return;
     renderCalendar();
   });
 
+  // Submit
   document.getElementById("form").addEventListener("submit", (e)=>{
     e.preventDefault();
 
@@ -437,19 +553,29 @@ ${it.start} até ${it.end}`)) return;
     const whoV = document.getElementById("who").value.trim();
     if(!whoV) return alert("Informe quem vai usar.");
 
+    const motiveV = document.getElementById("motive").value.trim();
     const carV = document.getElementById("car").value;
+
     const data = load();
 
-    // conflito por carro (sobreposição de datas)
+    // conflito por carro
     const conflict = data.some(r => r.car===carV && rangesOverlap(r.start, r.end, selStart, selEnd));
     if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
 
-    data.push({id: Date.now(), car: carV, who: whoV, start: selStart, end: selEnd});
+    data.push({
+      id: Date.now(),
+      car: carV,
+      who: whoV,
+      motive: motiveV,
+      start: selStart,
+      end: selEnd
+    });
     save(data);
 
-    // reset selection
+    // reset
     selStart = null; selEnd = null;
     document.getElementById("who").value="";
+    document.getElementById("motive").value="";
     startInp.value = ""; endInp.value = "";
     selLabel.innerText = "Selecione um período";
 
