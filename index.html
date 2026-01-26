@@ -658,7 +658,9 @@
     }
 
     // List
+    // EXCLUSÃO DESABILITADA NO APP
     async function del(id){
+      return;
       const it = reservas.find(x => x.id === id);
       if(!it) return;
 
@@ -690,14 +692,12 @@
             <br><span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
             ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
           </div>
-          <button class="mini" type="button" data-del="${r.id}">Excluir</button>
+          
         `;
         listEl.appendChild(div);
       });
 
-      listEl.querySelectorAll("[data-del]").forEach(btn => {
-        btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
-      });
+      
     }
 
     // Month navigation
