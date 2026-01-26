@@ -1,635 +1,760 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Reserva de Carros – Triton / Strada</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reserva de Carros – Triton / Strada</title>
 
-<style>
-:root{
-  --bg:#f4f6f8;
-  --card:#ffffff;
-  --text:#1f2937;
-  --muted:#6b7280;
-  --line:#e5e7eb;
-  --shadow:0 8px 20px rgba(0,0,0,.08);
+  <style>
+    :root{
+      --bg:#f4f6f8;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --shadow:0 8px 20px rgba(0,0,0,.08);
 
-  /* Cores (mais "fracas") */
-  --primary:#3b82f6;          /* reservado (mais claro que antes) */
-  --primary-edge:#1e40af;     /* início/fim */
-  --primary-soft:#cfe3ff;     /* intervalo selecionado */
-  --day:#f3f6fb;              /* quadrado padrão (mais suave) */
-  --dayHover:#eaf0fa;
-}
+      /* Cores */
+      --primary:#3b82f6;          /* reservado */
+      --primary-edge:#1e40af;     /* início/fim */
+      --primary-soft:#cfe3ff;     /* intervalo selecionado */
+      --day:#f3f6fb;              /* dia padrão */
+      --dayHover:#eaf0fa;
+    }
 
-*{box-sizing:border-box}
+    *{ box-sizing:border-box; }
 
-body{
-  margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
 
-.wrap{
-  max-width:100%;
-  padding:12px;
-}
+    .wrap{
+      max-width:100%;
+      padding:12px;
+    }
 
-.card{
-  background:var(--card);
-  border-radius:16px;
-  box-shadow:var(--shadow);
-  padding:14px;
-  margin-bottom:14px;
-}
+    .card{
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      margin-bottom:14px;
+    }
 
-h1{font-size:18px;margin:0}
-.sub{font-size:13px;color:var(--muted);margin-top:4px}
+    h1{ font-size:18px; margin:0; }
+    .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
 
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+      flex-wrap:wrap;
+    }
 
-.btn{
-  border:1px solid var(--line);
-  background:#fff;
-  padding:10px 14px;
-  border-radius:12px;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-}
-.btn.primary{
-  background:var(--primary);
-  color:#fff;
-  border-color:var(--primary);
-}
+    .modeBar{
+      margin-top:10px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
 
-.calendar-card{padding:12px}
+    .modeHint{
+      margin:0;
+    }
 
-.calHead{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:8px;
-  gap:10px;
-}
+    @media (max-width:480px){
+      .modeBar{ flex-direction:column; align-items:stretch; }
+      .modeBar .btn{ width:100%; }
+      .modeHint{ width:100%; }
+    }
 
-.monthLabel{
-  font-weight:700;
-  font-size:15px;
-  text-transform:capitalize;
-}
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 14px;
+      border-radius:12px;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      user-select:none;
+    }
 
-.cal-grid{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:6px;
-}
+    .btn.primary{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
 
-.dow{
-  text-align:center;
-  font-size:11px;
-  color:var(--muted);
-}
+    .btn.active{
+      border-color: rgba(59,130,246,.35);
+      background: rgba(59,130,246,.12);
+    }
 
-.day{
-  min-height:56px;
-  border-radius:12px;
-  background:var(--day);
-  text-align:center;
-  padding-top:6px;
-  cursor:pointer;
-  position:relative;
-  font-weight:650;
-  user-select:none;
-  transition: background .12s ease, transform .06s ease;
-}
-.day:hover{background:var(--dayHover)}
-.day:active{transform:scale(.99)}
+    /* Calendário */
+    .calendar-card{ padding:12px; }
 
-.day.muted{opacity:.35;cursor:default}
+    .calHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+      gap:10px;
+    }
 
-.day.reserved{
-  background:var(--primary);
-  color:#fff;
-}
+    .monthLabel{
+      font-weight:700;
+      font-size:15px;
+      text-transform:capitalize;
+    }
 
-.day.range{
-  background:var(--primary-soft);
-  color:#0b1220;
-}
+    .cal-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:6px;
+    }
 
-.day.edge{
-  background:var(--primary-edge);
-  color:#fff;
-}
+    .dow{
+      text-align:center;
+      font-size:11px;
+      color:var(--muted);
+    }
 
-.num{font-size:14px}
+    .day{
+      min-height:56px;
+      border-radius:12px;
+      background:var(--day);
+      text-align:center;
+      padding-top:6px;
+      cursor:pointer;
+      position:relative;
+      font-weight:650;
+      user-select:none;
+      transition: background .12s ease, transform .06s ease;
+    }
 
-.todayDot{
-  position:absolute;
-  top:6px;
-  right:6px;
-  width:6px;
-  height:6px;
-  background:#16a34a;
-  border-radius:50%;
-}
+    .day:hover{ background:var(--dayHover); }
+    .day:active{ transform:scale(.99); }
 
-/* Marcadores de reserva (* Triton, # Strada) */
-.marker{
-  position:absolute;
-  left:6px;
-  top:6px;
-  font-size:14px;
-  font-weight:900;
-  line-height:1;
-  padding:2px 6px;
-  border-radius:10px;
-  background: rgba(255,255,255,.80);
-  border:1px solid rgba(0,0,0,.08);
-  color:#0b1220;
-}
-.day.reserved .marker{
-  background: rgba(255,255,255,.92);
-}
-.marker:active{transform:scale(.98)}
+    .day.muted{ opacity:.35; cursor:default; }
 
-.form{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-}
+    .day.reserved{
+      background:var(--primary);
+      color:#fff;
+    }
 
-label{
-  font-size:13px;
-  color:var(--muted);
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
+    .day.range{
+      background:var(--primary-soft);
+      color:#0b1220;
+    }
 
-input,select,textarea{
-  padding:12px;
-  font-size:15px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#fff;
-}
-textarea{min-height:80px;resize:vertical}
+    .day.edge{
+      background:var(--primary-edge);
+      color:#fff;
+    }
 
-.list{
-  margin-top:12px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+    .num{ font-size:14px; }
 
-.item{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px;
-  font-size:14px;
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:flex-start;
-}
+    .todayDot{
+      position:absolute;
+      top:6px;
+      right:6px;
+      width:6px;
+      height:6px;
+      background:#16a34a;
+      border-radius:50%;
+    }
 
-.small{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.35;
-}
+    /* Marcadores: * Triton, # Strada */
+    .marker{
+      position:absolute;
+      left:6px;
+      top:28px;            /* mais embaixo para não tampar o número */
+      font-size:14px;
+      font-weight:900;
+      line-height:1;
+      padding:2px 6px;
+      border-radius:10px;
+      background: rgba(255,255,255,.80);
+      border:1px solid rgba(0,0,0,.08);
+      color:#0b1220;
+    }
 
-.mini{
-  padding:8px 10px;
-  border-radius:10px;
-  border:1px solid #fecaca;
-  background:#fff5f5;
-  color:#dc2626;
-  font-size:13px;
-  cursor:pointer;
-  font-weight:700;
-}
+    .day.reserved .marker{
+      background: rgba(255,255,255,.92);
+    }
 
-/* Modal */
-.modalWrap{
-  position:fixed;
-  inset:0;
-  background: rgba(0,0,0,.45);
-  display:none;
-  align-items:flex-end; /* bottom sheet no celular */
-  justify-content:center;
-  padding:12px;
-  z-index:999;
-}
-.modalWrap.show{display:flex}
-.modal{
-  width:min(720px, 100%);
-  background:#fff;
-  border-radius:16px;
-  box-shadow:0 20px 60px rgba(0,0,0,.25);
-  overflow:hidden;
-}
-.modalH{
-  padding:14px 14px 10px 14px;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-}
-.modalTitle{font-weight:800}
-.modalBody{padding:14px}
-.modalClose{
-  border:1px solid var(--line);
-  background:#fff;
-  border-radius:12px;
-  padding:8px 10px;
-  cursor:pointer;
-  font-weight:700;
-}
-.modalCard{
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:10px;
-}
-.tag{
-  display:inline-block;
-  font-size:12px;
-  font-weight:800;
-  padding:4px 8px;
-  border-radius:999px;
-  background:#eef2ff;
-  color:#1e40af;
-  margin-bottom:8px;
-}
+    /* Form */
+    .form{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
 
-/* Desktop */
-@media (min-width:768px){
-  .wrap{max-width:1000px;margin:auto}
-  .grid{
-    display:grid;
-    grid-template-columns:1.2fr .8fr;
-    gap:14px;
-  }
-  .modalWrap{align-items:center} /* desktop centraliza */
-}
-</style>
+    label{
+      font-size:13px;
+      color:var(--muted);
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    input, select, textarea{
+      padding:12px;
+      font-size:15px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+
+    textarea{ min-height:80px; resize:vertical; }
+
+    /* Lista */
+    .list{
+      margin-top:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px;
+      font-size:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .mini{
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid #fecaca;
+      background:#fff5f5;
+      color:#dc2626;
+      font-size:13px;
+      cursor:pointer;
+      font-weight:700;
+      user-select:none;
+    }
+
+    /* Modal (bottom-sheet no celular) */
+    .modalWrap{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.45);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:12px;
+      z-index:999;
+    }
+
+    .modalWrap.show{ display:flex; }
+
+    .modal{
+      width:min(720px, 100%);
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 20px 60px rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+
+    .modalH{
+      padding:14px 14px 10px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+
+    .modalTitle{ font-weight:800; }
+
+    .modalBody{ padding:14px; }
+
+    .modalClose{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:700;
+      user-select:none;
+    }
+
+    .modalCard{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+
+    .tag{
+      display:inline-block;
+      font-size:12px;
+      font-weight:800;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#1e40af;
+      margin-bottom:8px;
+    }
+
+    /* Desktop */
+    @media (min-width:768px){
+      .wrap{ max-width:1000px; margin:auto; }
+      .grid{
+        display:grid;
+        grid-template-columns:1.2fr .8fr;
+        gap:14px;
+      }
+      .modalWrap{ align-items:center; }
+    }
+  </style>
 </head>
 
 <body>
-<div class="wrap">
-  <div class="card top">
-    <div>
-      <h1>Reserva de Carros</h1>
-      <div class="sub">Clique em um dia para ver detalhes • Clique 1x início e 2x fim para reservar</div>
-    </div>
-  </div>
-
-  <div class="grid">
-    <div class="card calendar-card">
-      <div class="calHead">
-        <button class="btn" id="prevBtn" type="button">◀</button>
-        <div class="monthLabel" id="monthLabel"></div>
-        <button class="btn" id="nextBtn" type="button">▶</button>
-      </div>
-
-      <div class="cal-grid" id="dow"></div>
-      <div class="cal-grid" id="cal"></div>
-    </div>
-
-    <div class="card">
-      <div class="sub" id="selLabel">Selecione um período</div>
-
-      <form id="form" class="form">
-        <label>Carro
-          <select id="car">
-            <option>Triton</option>
-            <option>Strada</option>
-          </select>
-        </label>
-
-        <label>Quem vai usar
-          <input id="who" placeholder="Nome"/>
-        </label>
-
-        <label>Motivo
-          <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
-        </label>
-
-        <label>Destino
-          <input id="destination" placeholder="Ex.: Curitiba, cliente X"/>
-        </label>
-
-        <label>Data inicial
-          <input id="startDate" readonly/>
-        </label>
-
-        <label>Data final
-          <input id="endDate" readonly/>
-        </label>
-
-        <button class="btn primary" type="submit">Salvar reserva</button>
-      </form>
-
-      <div class="list" id="list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL -->
-<div class="modalWrap" id="modalWrap" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modalH">
+  <div class="wrap">
+    <div class="card top">
       <div>
-        <div class="modalTitle" id="modalTitle">Detalhes</div>
-        <div class="small" id="modalSub"></div>
-      </div>
-      <button class="modalClose" id="modalClose" type="button">Fechar</button>
-    </div>
-    <div class="modalBody" id="modalBody"></div>
-  </div>
-</div>
+        <h1>Reserva de Carros</h1>
+        <div class="sub">Clique 1x (início) e 2x (fim) para reservar • Em STATUS mostra detalhes</div>
 
-<script>
-(() => {
-  const LS="reserva_carros_mobile_v2";
-
-  const dowEl=document.getElementById("dow");
-  const calEl=document.getElementById("cal");
-  const monthLabel=document.getElementById("monthLabel");
-  const selLabel=document.getElementById("selLabel");
-  const listEl=document.getElementById("list");
-  const startInp=document.getElementById("startDate");
-  const endInp=document.getElementById("endDate");
-
-  const prevBtn=document.getElementById("prevBtn");
-  const nextBtn=document.getElementById("nextBtn");
-
-  // Modal
-  const modalWrap = document.getElementById("modalWrap");
-  const modalClose = document.getElementById("modalClose");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalSub = document.getElementById("modalSub");
-  const modalBody = document.getElementById("modalBody");
-
-  let view=new Date();
-  view = new Date(view.getFullYear(), view.getMonth(), 1); // 1º dia do mês
-  let selStart=null, selEnd=null;
-
-  const pad=n=>String(n).padStart(2,"0");
-  const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const brFromYmd=(s)=>{ const [Y,M,D]=s.split("-").map(Number); return `${pad(D)}/${pad(M)}/${Y}`; };
-
-  const load=()=>JSON.parse(localStorage.getItem(LS)||"[]");
-  const save=d=>localStorage.setItem(LS,JSON.stringify(d));
-
-  function escapeHtml(s){
-    return (s ?? "").toString()
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function renderDOW(){
-    dowEl.innerHTML = "";
-    ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach(d=>{
-      const el=document.createElement("div");
-      el.className="dow"; el.innerText=d; dowEl.appendChild(el);
-    });
-  }
-
-  function renderCalendar(){
-    calEl.innerHTML="";
-    monthLabel.innerText=view.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
-    const y=view.getFullYear(), m=view.getMonth();
-    const firstDow=new Date(y,m,1).getDay();
-    const days=new Date(y,m+1,0).getDate();
-    const data=load();
-
-    // blanks
-    for(let i=0;i<firstDow;i++){
-      const d=document.createElement("div");
-      d.className="day muted";
-      calEl.appendChild(d);
-    }
-
-    for(let i=1;i<=days;i++){
-      const d=new Date(y,m,i);
-      const key=ymd(d);
-      const div=document.createElement("div");
-      div.className="day";
-      div.innerHTML=`<div class="num">${i}</div>`;
-
-      // "Hoje"
-      const today = new Date();
-      if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
-        const dot = document.createElement("span");
-        dot.className="todayDot";
-        div.appendChild(dot);
-      }
-
-      // reservado (por carro) e marcador
-      const hasTriton = data.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
-      const hasStrada = data.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
-      const anyReserved = hasTriton || hasStrada;
-
-      if(anyReserved){
-        div.classList.add("reserved");
-
-        // marcador: * Triton, # Strada (se ambos, mostra "*#")
-        const mark = document.createElement("span");
-        mark.className = "marker";
-        mark.textContent = (hasTriton ? "*" : "") + (hasStrada ? "#" : "");
-        mark.title = "Toque para ver detalhes";
-        // abre popup SOMENTE ao tocar no marcador
-        mark.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          openDayModal(key);
-        });
-        div.appendChild(mark);
-      }
-
-      // seleção
-      if(selStart && selEnd && key>selStart && key<selEnd) div.classList.add("range");
-      if(key===selStart || key===selEnd) div.classList.add("edge");
-
-      // clique no dia = apenas selecionar (não abre popup)
-      div.addEventListener("click", () => {
-        pick(key);
-      });
-calEl.appendChild(div);
-    }
-  }
-
-  function pick(key){
-    if(!selStart || selEnd){
-      selStart=key; selEnd=null;
-    } else if(key < selStart){
-      selEnd=selStart; selStart=key;
-    } else {
-      selEnd=key;
-    }
-
-    startInp.value = selStart || "";
-    endInp.value = selEnd || "";
-
-    if(selStart && selEnd){
-      selLabel.innerText = `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
-    } else if(selStart){
-      selLabel.innerText = `Início: ${brFromYmd(selStart)} (clique no fim)`;
-    } else {
-      selLabel.innerText = "Selecione um período";
-    }
-
-    renderCalendar();
-    renderList();
-  }
-
-  function openDayModal(key){
-    const data = load();
-    const dayRes = data.filter(r => key>=r.start && key<=r.end)
-                      .sort((a,b)=> (a.car.localeCompare(b.car) || a.start.localeCompare(b.start)));
-
-    modalTitle.textContent = "Reservas do dia";
-    modalSub.textContent = brFromYmd(key);
-
-    if(!dayRes.length){
-      modalBody.innerHTML = `<div class="small">Nenhuma reserva para este dia.</div>`;
-    } else {
-      modalBody.innerHTML = dayRes.map(r => `
-        <div class="modalCard">
-          <div class="tag">${escapeHtml(r.car)}</div>
-          <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
-          <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
-          ${r.destination ? `<div class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</div>` : ``}${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
+        <div class="modeBar">
+          <button class="btn" id="modeReserve" type="button">RESERVA</button>
+          <button class="btn" id="modeStatus" type="button">STATUS</button>
+          <div class="sub modeHint" id="modeHint">Modo: RESERVA</div>
         </div>
-      `).join("");
-    }
-
-    modalWrap.classList.add("show");
-    modalWrap.setAttribute("aria-hidden", "false");
-  }
-
-  function closeModal(){
-    modalWrap.classList.remove("show");
-    modalWrap.setAttribute("aria-hidden", "true");
-  }
-
-  modalClose.addEventListener("click", closeModal);
-  modalWrap.addEventListener("click", (e) => { if(e.target === modalWrap) closeModal(); });
-  document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
-
-  function renderList(){
-    listEl.innerHTML="";
-    const data = load().slice().sort((a,b)=> (a.start.localeCompare(b.start)));
-
-    if(!data.length){
-      listEl.innerHTML = `<div class="small">Nenhuma reserva ainda.</div>`;
-      return;
-    }
-
-    data.forEach(r=>{
-      const div=document.createElement("div");
-      div.className="item";
-      div.innerHTML=`<div>
-        <strong>${escapeHtml(r.car)}</strong><br>
-        <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span><br>
-        <span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
-        ${r.destination ? `<br><span class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</span>` : ``}${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
       </div>
-      <button class="mini" type="button" data-del="${r.id}">Excluir</button>`;
-      listEl.appendChild(div);
-    });
+    </div>
 
-    listEl.querySelectorAll("[data-del]").forEach(btn=>{
-      btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
-    });
-  }
+    <div class="grid">
+      <!-- CALENDÁRIO -->
+      <div class="card calendar-card">
+        <div class="calHead">
+          <button class="btn" id="prevBtn" type="button">◀</button>
+          <div class="monthLabel" id="monthLabel"></div>
+          <button class="btn" id="nextBtn" type="button">▶</button>
+        </div>
 
-  function rangesOverlap(aStart,aEnd,bStart,bEnd){
-    return aStart <= bEnd && bStart <= aEnd; // inclusivo
-  }
+        <div class="cal-grid" id="dow"></div>
+        <div class="cal-grid" id="cal"></div>
+      </div>
 
-  function del(id){
-    const all = load();
-    const it = all.find(x=> String(x.id)===String(id));
-    if(!it) return;
-    if(!confirm(`Excluir reserva?
+      <!-- FORM + LISTA -->
+      <div class="card">
+        <div class="sub" id="selLabel">Selecione um período</div>
+
+        <form id="form" class="form">
+          <label>
+            Carro
+            <select id="car">
+              <option>Triton</option>
+              <option>Strada</option>
+            </select>
+          </label>
+
+          <label>
+            Quem vai usar
+            <input id="who" placeholder="Nome" />
+          </label>
+
+          <label>
+            Destino
+            <input id="destination" placeholder="Ex.: Curitiba, cliente X" />
+          </label>
+
+          <label>
+            Motivo
+            <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
+          </label>
+
+          <label>
+            Data inicial
+            <input id="startDate" readonly />
+          </label>
+
+          <label>
+            Data final
+            <input id="endDate" readonly />
+          </label>
+
+          <button class="btn primary" type="submit">Salvar reserva</button>
+        </form>
+
+        <div class="list" id="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modalWrap" id="modalWrap" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modalH">
+        <div>
+          <div class="modalTitle" id="modalTitle">Detalhes</div>
+          <div class="small" id="modalSub"></div>
+        </div>
+        <button class="modalClose" id="modalClose" type="button">Fechar</button>
+      </div>
+      <div class="modalBody" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const LS = "reserva_carros_mobile_final";
+
+      // Elements
+      const dowEl = document.getElementById("dow");
+      const calEl = document.getElementById("cal");
+      const monthLabel = document.getElementById("monthLabel");
+      const selLabel = document.getElementById("selLabel");
+      const listEl = document.getElementById("list");
+      const startInp = document.getElementById("startDate");
+      const endInp = document.getElementById("endDate");
+
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      // Mode controls
+      const modeReserveBtn = document.getElementById("modeReserve");
+      const modeStatusBtn = document.getElementById("modeStatus");
+      const modeHint = document.getElementById("modeHint");
+      let mode = "reserve"; // "reserve" | "status"
+
+      // Modal
+      const modalWrap = document.getElementById("modalWrap");
+      const modalClose = document.getElementById("modalClose");
+      const modalTitle = document.getElementById("modalTitle");
+      const modalSub = document.getElementById("modalSub");
+      const modalBody = document.getElementById("modalBody");
+
+      // State
+      let view = new Date();
+      view = new Date(view.getFullYear(), view.getMonth(), 1); // sempre no 1º dia do mês
+      let selStart = null;
+      let selEnd = null;
+
+      // Helpers
+      const pad = (n) => String(n).padStart(2, "0");
+      const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+      function brFromYmd(s){
+        const [Y, M, D] = s.split("-").map(Number);
+        return `${pad(D)}/${pad(M)}/${Y}`;
+      }
+
+      function load(){
+        try { return JSON.parse(localStorage.getItem(LS) || "[]"); }
+        catch { return []; }
+      }
+
+      function save(items){
+        localStorage.setItem(LS, JSON.stringify(items));
+      }
+
+      function escapeHtml(s){
+        return (s ?? "").toString()
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#039;");
+      }
+
+      function setMode(newMode){
+        mode = newMode;
+
+        modeReserveBtn.classList.toggle("active", mode === "reserve");
+        modeStatusBtn.classList.toggle("active", mode === "status");
+
+        modeHint.textContent =
+          "Modo: " +
+          (mode === "reserve"
+            ? "RESERVA (seleciona período)"
+            : "STATUS (mostra detalhes do dia)");
+      }
+
+      modeReserveBtn.addEventListener("click", () => setMode("reserve"));
+      modeStatusBtn.addEventListener("click", () => setMode("status"));
+
+      // Calendar header (days of week)
+      function renderDOW(){
+        dowEl.innerHTML = "";
+        ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach((d) => {
+          const el = document.createElement("div");
+          el.className = "dow";
+          el.innerText = d;
+          dowEl.appendChild(el);
+        });
+      }
+
+      // Modal
+      function openDayModal(key){
+        const data = load();
+
+        const dayRes = data
+          .filter(r => key >= r.start && key <= r.end)
+          .sort((a,b) => (a.car.localeCompare(b.car) || a.start.localeCompare(b.start)));
+
+        modalTitle.textContent = "Reservas do dia";
+        modalSub.textContent = brFromYmd(key);
+
+        if(!dayRes.length){
+          modalBody.innerHTML = `<div class="small">Nenhuma reserva para este dia.</div>`;
+        } else {
+          modalBody.innerHTML = dayRes.map(r => `
+            <div class="modalCard">
+              <div class="tag">${escapeHtml(r.car)}</div>
+              <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
+              ${r.destination ? `<div class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</div>` : ``}
+              <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
+              ${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
+            </div>
+          `).join("");
+        }
+
+        modalWrap.classList.add("show");
+        modalWrap.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal(){
+        modalWrap.classList.remove("show");
+        modalWrap.setAttribute("aria-hidden", "true");
+      }
+
+      modalClose.addEventListener("click", closeModal);
+      modalWrap.addEventListener("click", (e) => { if(e.target === modalWrap) closeModal(); });
+      document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
+
+      // Selection logic
+      function pick(key){
+        if(!selStart || selEnd){
+          selStart = key;
+          selEnd = null;
+        } else if(key < selStart){
+          selEnd = selStart;
+          selStart = key;
+        } else {
+          selEnd = key;
+        }
+
+        startInp.value = selStart || "";
+        endInp.value = selEnd || "";
+
+        if(selStart && selEnd){
+          selLabel.textContent = `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
+        } else if(selStart){
+          selLabel.textContent = `Início: ${brFromYmd(selStart)} (clique no fim)`;
+        } else {
+          selLabel.textContent = "Selecione um período";
+        }
+
+        renderCalendar();
+        renderList();
+      }
+
+      // Calendar render
+      function renderCalendar(){
+        calEl.innerHTML = "";
+        monthLabel.innerText = view.toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
+
+        const y = view.getFullYear();
+        const m = view.getMonth();
+        const firstDow = new Date(y, m, 1).getDay();
+        const days = new Date(y, m + 1, 0).getDate();
+        const data = load();
+
+        // blanks before day 1
+        for(let i=0; i<firstDow; i++){
+          const blank = document.createElement("div");
+          blank.className = "day muted";
+          calEl.appendChild(blank);
+        }
+
+        // days
+        for(let i=1; i<=days; i++){
+          const d = new Date(y, m, i);
+          const key = ymd(d);
+
+          const cell = document.createElement("div");
+          cell.className = "day";
+          cell.innerHTML = `<div class="num">${i}</div>`;
+
+          // today dot
+          const today = new Date();
+          if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
+            const dot = document.createElement("span");
+            dot.className = "todayDot";
+            cell.appendChild(dot);
+          }
+
+          // reserved flags by car
+          const hasTriton = data.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
+          const hasStrada = data.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
+          const anyReserved = hasTriton || hasStrada;
+
+          if(anyReserved){
+            cell.classList.add("reserved");
+
+            // marker: * Triton, # Strada
+            const mark = document.createElement("span");
+            mark.className = "marker";
+            mark.textContent = (hasTriton ? "*" : "") + (hasStrada ? "#" : "");
+            mark.title = "Toque para ver detalhes";
+
+            // Marker always opens modal (doesn't interfere with selecting)
+            mark.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              openDayModal(key);
+            });
+
+            cell.appendChild(mark);
+          }
+
+          // selection styling
+          if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
+          if(key === selStart || key === selEnd) cell.classList.add("edge");
+
+          // click behavior depends on mode
+          cell.addEventListener("click", () => {
+            if(mode === "reserve"){
+              pick(key);
+            } else {
+              openDayModal(key); // shows "none" if empty
+            }
+          });
+
+          calEl.appendChild(cell);
+        }
+      }
+
+      // List
+      function rangesOverlap(aStart, aEnd, bStart, bEnd){
+        return aStart <= bEnd && bStart <= aEnd; // inclusive overlap
+      }
+
+      function del(id){
+        const all = load();
+        const it = all.find(x => String(x.id) === String(id));
+        if(!it) return;
+
+        if(!confirm(`Excluir reserva?
 ${it.car} - ${it.who}
 ${it.start} até ${it.end}`)) return;
-    save(all.filter(r=> String(r.id)!==String(id)));
-    renderCalendar();
-    renderList();
-  }
 
-  // Botões mês
-  prevBtn.addEventListener("click", () => {
-    view = new Date(view.getFullYear(), view.getMonth()-1, 1);
-    renderCalendar();
-  });
-  nextBtn.addEventListener("click", () => {
-    view = new Date(view.getFullYear(), view.getMonth()+1, 1);
-    renderCalendar();
-  });
+        save(all.filter(r => String(r.id) !== String(id)));
+        renderCalendar();
+        renderList();
+      }
 
-  // Submit
-  document.getElementById("form").addEventListener("submit", (e)=>{
-    e.preventDefault();
+      function renderList(){
+        listEl.innerHTML = "";
 
-    if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
-    const whoV = document.getElementById("who").value.trim();
-    if(!whoV) return alert("Informe quem vai usar.");
+        const data = load().slice().sort((a,b) => a.start.localeCompare(b.start));
 
-    const motiveV = document.getElementById("motive").value.trim();
-    const destinationV = document.getElementById("destination").value.trim();
-    const carV = document.getElementById("car").value;
+        if(!data.length){
+          listEl.innerHTML = `<div class="small">Nenhuma reserva ainda.</div>`;
+          return;
+        }
 
-    const data = load();
+        data.forEach(r => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `
+            <div>
+              <strong>${escapeHtml(r.car)}</strong><br>
+              <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span>
+              ${r.destination ? `<br><span class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</span>` : ``}
+              <br><span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
+              ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
+            </div>
+            <button class="mini" type="button" data-del="${r.id}">Excluir</button>
+          `;
+          listEl.appendChild(div);
+        });
 
-    // conflito por carro
-    const conflict = data.some(r => r.car===carV && rangesOverlap(r.start, r.end, selStart, selEnd));
-    if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
+        listEl.querySelectorAll("[data-del]").forEach(btn => {
+          btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
+        });
+      }
 
-    data.push({
-      id: Date.now(),
-      car: carV,
-      who: whoV,
-      motive: motiveV,
-      destination: destinationV,
-      start: selStart,
-      end: selEnd
-    });
-    save(data);
+      // Month navigation
+      prevBtn.addEventListener("click", () => {
+        view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+        renderCalendar();
+      });
 
-    // reset
-    selStart = null; selEnd = null;
-    document.getElementById("who").value="";
-    document.getElementById("motive").value="";
-    document.getElementById("destination").value="";
-    startInp.value = ""; endInp.value = "";
-    selLabel.innerText = "Selecione um período";
+      nextBtn.addEventListener("click", () => {
+        view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+        renderCalendar();
+      });
 
-    renderCalendar();
-    renderList();
-  });
+      // Submit reservation
+      document.getElementById("form").addEventListener("submit", (e) => {
+        e.preventDefault();
 
-  // Init
-  renderDOW();
-  renderCalendar();
-  renderList();
-})();
-</script>
+        if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
+
+        const whoV = document.getElementById("who").value.trim();
+        if(!whoV) return alert("Informe quem vai usar.");
+
+        const destinationV = document.getElementById("destination").value.trim();
+        const motiveV = document.getElementById("motive").value.trim();
+        const carV = document.getElementById("car").value;
+
+        const data = load();
+
+        // conflict per car
+        const conflict = data.some(r => r.car === carV && rangesOverlap(r.start, r.end, selStart, selEnd));
+        if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
+
+        data.push({
+          id: Date.now(),
+          car: carV,
+          who: whoV,
+          destination: destinationV,
+          motive: motiveV,
+          start: selStart,
+          end: selEnd
+        });
+
+        save(data);
+
+        // reset selection + inputs
+        selStart = null;
+        selEnd = null;
+        document.getElementById("who").value = "";
+        document.getElementById("destination").value = "";
+        document.getElementById("motive").value = "";
+        startInp.value = "";
+        endInp.value = "";
+        selLabel.textContent = "Selecione um período";
+
+        renderCalendar();
+        renderList();
+      });
+
+      // Init
+      renderDOW();
+      setMode("reserve");
+      renderCalendar();
+      renderList();
+    })();
+  </script>
 </body>
 </html>
