@@ -427,7 +427,7 @@ textarea{min-height:80px;resize:vertical}
 
       div.addEventListener("click", () => {
         pick(key);
-        openDayModal(key);
+        if (anyReserved) openDayModal(key);
       });
 
       calEl.appendChild(div);
