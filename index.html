@@ -14,7 +14,6 @@
       --line:#e5e7eb;
       --shadow:0 8px 20px rgba(0,0,0,.08);
 
-      /* Cores */
       --primary:#3b82f6;          /* reservado */
       --primary-edge:#1e40af;     /* início/fim */
       --primary-soft:#cfe3ff;     /* intervalo selecionado */
@@ -63,9 +62,7 @@
       align-items:center;
     }
 
-    .modeHint{
-      margin:0;
-    }
+    .modeHint{ margin:0; }
 
     @media (max-width:480px){
       .modeBar{ flex-direction:column; align-items:stretch; }
@@ -352,11 +349,11 @@
 
         <div class="cal-grid" id="dow"></div>
         <div class="cal-grid" id="cal"></div>
+
         <div class="small" style="margin-top:8px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
           <span><strong>*</strong> Triton</span>
           <span><strong>#</strong> Strada</span>
         </div>
-
       </div>
 
       <!-- FORM + LISTA -->
@@ -419,347 +416,357 @@
     </div>
   </div>
 
-  <script>
-    (() => {
-      const LS = "reserva_carros_mobile_final";
+  <!-- APP + FIREBASE (tudo aqui) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      onSnapshot,
+      deleteDoc,
+      doc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-      // Elements
-      const dowEl = document.getElementById("dow");
-      const calEl = document.getElementById("cal");
-      const monthLabel = document.getElementById("monthLabel");
-      const selLabel = document.getElementById("selLabel");
-      const listEl = document.getElementById("list");
-      const startInp = document.getElementById("startDate");
-      const endInp = document.getElementById("endDate");
+    // ===== Firebase config (SEU) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVQBCqrJqmd4bwqM1HiiKN1dbdy6qVOtA",
+      authDomain: "agendacarrosgrilazer.firebaseapp.com",
+      projectId: "agendacarrosgrilazer",
+      storageBucket: "agendacarrosgrilazer.firebasestorage.app",
+      messagingSenderId: "1069638712105",
+      appId: "1:1069638712105:web:c30e3b406c1748e7791538"
+    };
 
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const reservasRef = collection(db, "reservas");
 
-      // Mode controls
-      const modeReserveBtn = document.getElementById("modeReserve");
-      const modeStatusBtn = document.getElementById("modeStatus");
-      const modeHint = document.getElementById("modeHint");
-      let mode = "reserve"; // "reserve" | "status"
+    // ===== Elements =====
+    const dowEl = document.getElementById("dow");
+    const calEl = document.getElementById("cal");
+    const monthLabel = document.getElementById("monthLabel");
+    const selLabel = document.getElementById("selLabel");
+    const listEl = document.getElementById("list");
+    const startInp = document.getElementById("startDate");
+    const endInp = document.getElementById("endDate");
 
-      // Modal
-      const modalWrap = document.getElementById("modalWrap");
-      const modalClose = document.getElementById("modalClose");
-      const modalTitle = document.getElementById("modalTitle");
-      const modalSub = document.getElementById("modalSub");
-      const modalBody = document.getElementById("modalBody");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
 
-      // State
-      let view = new Date();
-      view = new Date(view.getFullYear(), view.getMonth(), 1); // sempre no 1º dia do mês
-      let selStart = null;
-      let selEnd = null;
+    // Mode controls
+    const modeReserveBtn = document.getElementById("modeReserve");
+    const modeStatusBtn = document.getElementById("modeStatus");
+    const modeHint = document.getElementById("modeHint");
+    let mode = "reserve"; // "reserve" | "status"
 
-      // Helpers
-      const pad = (n) => String(n).padStart(2, "0");
-      const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    // Modal
+    const modalWrap = document.getElementById("modalWrap");
+    const modalClose = document.getElementById("modalClose");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalSub = document.getElementById("modalSub");
+    const modalBody = document.getElementById("modalBody");
 
-      function brFromYmd(s){
-        const [Y, M, D] = s.split("-").map(Number);
-        return `${pad(D)}/${pad(M)}/${Y}`;
-      }
+    // State
+    let view = new Date();
+    view = new Date(view.getFullYear(), view.getMonth(), 1);
+    let selStart = null;
+    let selEnd = null;
 
-      function load(){
-        try { return JSON.parse(localStorage.getItem(LS) || "[]"); }
-        catch { return []; }
-      }
+    // Firestore cache (live)
+    let reservas = []; // [{id, car, who, destination, motive, start, end, createdAt}]
 
-      function save(items){
-        localStorage.setItem(LS, JSON.stringify(items));
-      }
+    // Helpers
+    const pad = (n) => String(n).padStart(2, "0");
+    const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-      function escapeHtml(s){
-        return (s ?? "").toString()
-          .replaceAll("&","&amp;")
-          .replaceAll("<","&lt;")
-          .replaceAll(">","&gt;")
-          .replaceAll('"',"&quot;")
-          .replaceAll("'","&#039;");
-      }
+    function brFromYmd(s){
+      const [Y, M, D] = s.split("-").map(Number);
+      return `${pad(D)}/${pad(M)}/${Y}`;
+    }
 
-      function setMode(newMode){
-        mode = newMode;
+    function escapeHtml(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
 
-        modeReserveBtn.classList.toggle("active", mode === "reserve");
-        modeStatusBtn.classList.toggle("active", mode === "status");
+    function rangesOverlap(aStart, aEnd, bStart, bEnd){
+      return aStart <= bEnd && bStart <= aEnd; // inclusive
+    }
 
-        modeHint.textContent =
-          "Modo: " +
-          (mode === "reserve"
-            ? "RESERVA (seleciona período)"
-            : "STATUS (mostra detalhes do dia)");
-      }
+    // Mode
+    function setMode(newMode){
+      mode = newMode;
+      modeReserveBtn.classList.toggle("active", mode === "reserve");
+      modeStatusBtn.classList.toggle("active", mode === "status");
+      modeHint.textContent =
+        "Modo: " +
+        (mode === "reserve"
+          ? "RESERVA (seleciona período)"
+          : "STATUS (mostra detalhes do dia)");
+    }
 
-      modeReserveBtn.addEventListener("click", () => setMode("reserve"));
-      modeStatusBtn.addEventListener("click", () => setMode("status"));
+    modeReserveBtn.addEventListener("click", () => setMode("reserve"));
+    modeStatusBtn.addEventListener("click", () => setMode("status"));
 
-      // Calendar header (days of week)
-      function renderDOW(){
-        dowEl.innerHTML = "";
-        ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach((d) => {
-          const el = document.createElement("div");
-          el.className = "dow";
-          el.innerText = d;
-          dowEl.appendChild(el);
-        });
-      }
-
-      // Modal
-      function openDayModal(key){
-        const data = load();
-
-        const dayRes = data
-          .filter(r => key >= r.start && key <= r.end)
-          .sort((a,b) => (a.car.localeCompare(b.car) || a.start.localeCompare(b.start)));
-
-        modalTitle.textContent = "Reservas do dia";
-        modalSub.textContent = brFromYmd(key);
-
-        if(!dayRes.length){
-          modalBody.innerHTML = `<div class="small">Nenhuma reserva para este dia.</div>`;
-        } else {
-          modalBody.innerHTML = dayRes.map(r => `
-            <div class="modalCard">
-              <div class="tag">${escapeHtml(r.car)}</div>
-              <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
-              ${r.destination ? `<div class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</div>` : ``}
-              <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
-              ${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
-            </div>
-          `).join("");
-        }
-
-        modalWrap.classList.add("show");
-        modalWrap.setAttribute("aria-hidden", "false");
-      }
-
-      function closeModal(){
-        modalWrap.classList.remove("show");
-        modalWrap.setAttribute("aria-hidden", "true");
-      }
-
-      modalClose.addEventListener("click", closeModal);
-      modalWrap.addEventListener("click", (e) => { if(e.target === modalWrap) closeModal(); });
-      document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
-
-      // Selection logic
-      function pick(key){
-        if(!selStart || selEnd){
-          selStart = key;
-          selEnd = null;
-        } else if(key < selStart){
-          selEnd = selStart;
-          selStart = key;
-        } else {
-          selEnd = key;
-        }
-
-        startInp.value = selStart || "";
-        endInp.value = selEnd || "";
-
-        if(selStart && selEnd){
-          selLabel.textContent = `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
-        } else if(selStart){
-          selLabel.textContent = `Início: ${brFromYmd(selStart)} (clique no fim)`;
-        } else {
-          selLabel.textContent = "Selecione um período";
-        }
-
-        renderCalendar();
-        renderList();
-      }
-
-      // Calendar render
-      function renderCalendar(){
-        calEl.innerHTML = "";
-        monthLabel.innerText = view.toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
-
-        const y = view.getFullYear();
-        const m = view.getMonth();
-        const firstDow = new Date(y, m, 1).getDay();
-        const days = new Date(y, m + 1, 0).getDate();
-        const data = load();
-
-        // blanks before day 1
-        for(let i=0; i<firstDow; i++){
-          const blank = document.createElement("div");
-          blank.className = "day muted";
-          calEl.appendChild(blank);
-        }
-
-        // days
-        for(let i=1; i<=days; i++){
-          const d = new Date(y, m, i);
-          const key = ymd(d);
-
-          const cell = document.createElement("div");
-          cell.className = "day";
-          cell.innerHTML = `<div class="num">${i}</div>`;
-
-          // today dot
-          const today = new Date();
-          if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
-            const dot = document.createElement("span");
-            dot.className = "todayDot";
-            cell.appendChild(dot);
-          }
-
-          // reserved flags by car
-          const hasTriton = data.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
-          const hasStrada = data.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
-          const anyReserved = hasTriton || hasStrada;
-
-          if(anyReserved){
-            cell.classList.add("reserved");
-
-            // marker: * Triton, # Strada
-            const mark = document.createElement("span");
-            mark.className = "marker";
-            mark.textContent = (hasTriton ? "*" : "") + (hasStrada ? "#" : "");
-            mark.title = "Toque para ver detalhes";
-
-            // Marker always opens modal (doesn't interfere with selecting)
-            mark.addEventListener("click", (ev) => {
-              ev.stopPropagation();
-              openDayModal(key);
-            });
-
-            cell.appendChild(mark);
-          }
-
-          // selection styling
-          if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
-          if(key === selStart || key === selEnd) cell.classList.add("edge");
-
-          // click behavior depends on mode
-          cell.addEventListener("click", () => {
-            if(mode === "reserve"){
-              pick(key);
-            } else {
-              openDayModal(key); // shows "none" if empty
-            }
-          });
-
-          calEl.appendChild(cell);
-        }
-      }
-
-      // List
-      function rangesOverlap(aStart, aEnd, bStart, bEnd){
-        return aStart <= bEnd && bStart <= aEnd; // inclusive overlap
-      }
-
-      function del(id){
-        const all = load();
-        const it = all.find(x => String(x.id) === String(id));
-        if(!it) return;
-
-        if(!confirm(`Excluir reserva?
-${it.car} - ${it.who}
-${it.start} até ${it.end}`)) return;
-
-        save(all.filter(r => String(r.id) !== String(id)));
-        renderCalendar();
-        renderList();
-      }
-
-      function renderList(){
-        listEl.innerHTML = "";
-
-        const data = load().slice().sort((a,b) => a.start.localeCompare(b.start));
-
-        if(!data.length){
-          listEl.innerHTML = `<div class="small">Nenhuma reserva ainda.</div>`;
-          return;
-        }
-
-        data.forEach(r => {
-          const div = document.createElement("div");
-          div.className = "item";
-          div.innerHTML = `
-            <div>
-              <strong>${escapeHtml(r.car)}</strong><br>
-              <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span>
-              ${r.destination ? `<br><span class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</span>` : ``}
-              <br><span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
-              ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
-            </div>
-            <button class="mini" type="button" data-del="${r.id}">Excluir</button>
-          `;
-          listEl.appendChild(div);
-        });
-
-        listEl.querySelectorAll("[data-del]").forEach(btn => {
-          btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
-        });
-      }
-
-      // Month navigation
-      prevBtn.addEventListener("click", () => {
-        view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
-        renderCalendar();
+    // DOW
+    function renderDOW(){
+      dowEl.innerHTML = "";
+      ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach((d) => {
+        const el = document.createElement("div");
+        el.className = "dow";
+        el.innerText = d;
+        dowEl.appendChild(el);
       });
+    }
 
-      nextBtn.addEventListener("click", () => {
-        view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
-        renderCalendar();
-      });
+    // Modal
+    function openDayModal(key){
+      const dayRes = reservas
+        .filter(r => key >= r.start && key <= r.end)
+        .sort((a,b) => (a.car.localeCompare(b.car) || a.start.localeCompare(b.start)));
 
-      // Submit reservation
-      document.getElementById("form").addEventListener("submit", (e) => {
-        e.preventDefault();
+      modalTitle.textContent = "Reservas do dia";
+      modalSub.textContent = brFromYmd(key);
 
-        if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
+      if(!dayRes.length){
+        modalBody.innerHTML = `<div class="small">Nenhuma reserva para este dia.</div>`;
+      } else {
+        modalBody.innerHTML = dayRes.map(r => `
+          <div class="modalCard">
+            <div class="tag">${escapeHtml(r.car)}</div>
+            <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
+            ${r.destination ? `<div class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</div>` : ``}
+            <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
+            ${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
+          </div>
+        `).join("");
+      }
 
-        const whoV = document.getElementById("who").value.trim();
-        if(!whoV) return alert("Informe quem vai usar.");
+      modalWrap.classList.add("show");
+      modalWrap.setAttribute("aria-hidden", "false");
+    }
 
-        const destinationV = document.getElementById("destination").value.trim();
-        const motiveV = document.getElementById("motive").value.trim();
-        const carV = document.getElementById("car").value;
+    function closeModal(){
+      modalWrap.classList.remove("show");
+      modalWrap.setAttribute("aria-hidden", "true");
+    }
 
-        const data = load();
+    modalClose.addEventListener("click", closeModal);
+    modalWrap.addEventListener("click", (e) => { if(e.target === modalWrap) closeModal(); });
+    document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
 
-        // conflict per car
-        const conflict = data.some(r => r.car === carV && rangesOverlap(r.start, r.end, selStart, selEnd));
-        if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
-
-        data.push({
-          id: Date.now(),
-          car: carV,
-          who: whoV,
-          destination: destinationV,
-          motive: motiveV,
-          start: selStart,
-          end: selEnd
-        });
-
-        save(data);
-
-        // reset selection + inputs
-        selStart = null;
+    // Selection
+    function pick(key){
+      if(!selStart || selEnd){
+        selStart = key;
         selEnd = null;
-        document.getElementById("who").value = "";
-        document.getElementById("destination").value = "";
-        document.getElementById("motive").value = "";
-        startInp.value = "";
-        endInp.value = "";
+      } else if(key < selStart){
+        selEnd = selStart;
+        selStart = key;
+      } else {
+        selEnd = key;
+      }
+
+      startInp.value = selStart || "";
+      endInp.value = selEnd || "";
+
+      if(selStart && selEnd){
+        selLabel.textContent = `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
+      } else if(selStart){
+        selLabel.textContent = `Início: ${brFromYmd(selStart)} (clique no fim)`;
+      } else {
         selLabel.textContent = "Selecione um período";
+      }
 
-        renderCalendar();
-        renderList();
-      });
-
-      // Init
-      renderDOW();
-      setMode("reserve");
       renderCalendar();
       renderList();
-    })();
+    }
+
+    // Calendar
+    function renderCalendar(){
+      calEl.innerHTML = "";
+      monthLabel.innerText = view.toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
+
+      const y = view.getFullYear();
+      const m = view.getMonth();
+      const firstDow = new Date(y, m, 1).getDay();
+      const days = new Date(y, m + 1, 0).getDate();
+
+      // blanks
+      for(let i=0; i<firstDow; i++){
+        const blank = document.createElement("div");
+        blank.className = "day muted";
+        calEl.appendChild(blank);
+      }
+
+      for(let i=1; i<=days; i++){
+        const d = new Date(y, m, i);
+        const key = ymd(d);
+
+        const cell = document.createElement("div");
+        cell.className = "day";
+        cell.innerHTML = `<div class="num">${i}</div>`;
+
+        // today dot
+        const today = new Date();
+        if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
+          const dot = document.createElement("span");
+          dot.className = "todayDot";
+          cell.appendChild(dot);
+        }
+
+        // Reserved flags by car
+        const hasTriton = reservas.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
+        const hasStrada = reservas.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
+        const anyReserved = hasTriton || hasStrada;
+
+        if(anyReserved){
+          cell.classList.add("reserved");
+
+          const mark = document.createElement("span");
+          mark.className = "marker";
+          mark.textContent = (hasTriton ? "*" : "") + (hasStrada ? "#" : "");
+          mark.title = "Toque para ver detalhes";
+          mark.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            openDayModal(key);
+          });
+          cell.appendChild(mark);
+        }
+
+        // selection style
+        if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
+        if(key === selStart || key === selEnd) cell.classList.add("edge");
+
+        // click behavior
+        cell.addEventListener("click", () => {
+          if(mode === "reserve"){
+            pick(key);
+          } else {
+            openDayModal(key);
+          }
+        });
+
+        calEl.appendChild(cell);
+      }
+    }
+
+    // List
+    async function del(id){
+      const it = reservas.find(x => x.id === id);
+      if(!it) return;
+
+      if(!confirm(`Excluir reserva?\n${it.car} - ${it.who}\n${it.start} até ${it.end}`)) return;
+
+      await deleteDoc(doc(db, "reservas", id));
+    }
+
+    function renderList(){
+      listEl.innerHTML = "";
+
+      const data = reservas
+        .slice()
+        .sort((a,b) => (a.start.localeCompare(b.start)));
+
+      if(!data.length){
+        listEl.innerHTML = `<div class="small">Nenhuma reserva ainda.</div>`;
+        return;
+      }
+
+      data.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <div>
+            <strong>${escapeHtml(r.car)}</strong><br>
+            <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span>
+            ${r.destination ? `<br><span class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</span>` : ``}
+            <br><span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
+            ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
+          </div>
+          <button class="mini" type="button" data-del="${r.id}">Excluir</button>
+        `;
+        listEl.appendChild(div);
+      });
+
+      listEl.querySelectorAll("[data-del]").forEach(btn => {
+        btn.addEventListener("click", () => del(btn.getAttribute("data-del")));
+      });
+    }
+
+    // Month navigation
+    prevBtn.addEventListener("click", () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      renderCalendar();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      renderCalendar();
+    });
+
+    // Submit -> Firestore
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
+
+      const whoV = document.getElementById("who").value.trim();
+      if(!whoV) return alert("Informe quem vai usar.");
+
+      const destinationV = document.getElementById("destination").value.trim();
+      const motiveV = document.getElementById("motive").value.trim();
+      const carV = document.getElementById("car").value;
+
+      // conflito por carro (usa cache local do Firestore)
+      const conflict = reservas.some(r => r.car === carV && rangesOverlap(r.start, r.end, selStart, selEnd));
+      if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
+
+      await addDoc(reservasRef, {
+        car: carV,
+        who: whoV,
+        destination: destinationV,
+        motive: motiveV,
+        start: selStart,
+        end: selEnd,
+        createdAt: serverTimestamp()
+      });
+
+      // reset selection + inputs
+      selStart = null;
+      selEnd = null;
+      document.getElementById("who").value = "";
+      document.getElementById("destination").value = "";
+      document.getElementById("motive").value = "";
+      startInp.value = "";
+      endInp.value = "";
+      selLabel.textContent = "Selecione um período";
+
+      renderCalendar();
+      renderList();
+    });
+
+    // Live sync (todos veem igual)
+    onSnapshot(reservasRef, (snap) => {
+      reservas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderCalendar();
+      renderList();
+    }, (err) => {
+      console.error(err);
+      alert("Erro ao conectar no Firestore. Confira as regras (Rules) e o Hosting.");
+    });
+
+    // Init
+    renderDOW();
+    setMode("reserve");
+    renderCalendar();
+    renderList();
   </script>
 </body>
 </html>
