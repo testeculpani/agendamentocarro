@@ -142,6 +142,25 @@ h1{font-size:18px;margin:0}
   border-radius:50%;
 }
 
+/* Marcadores de reserva (* Triton, # Strada) */
+.marker{
+  position:absolute;
+  left:6px;
+  top:6px;
+  font-size:14px;
+  font-weight:900;
+  line-height:1;
+  padding:2px 6px;
+  border-radius:10px;
+  background: rgba(255,255,255,.80);
+  border:1px solid rgba(0,0,0,.08);
+  color:#0b1220;
+}
+.day.reserved .marker{
+  background: rgba(255,255,255,.92);
+}
+.marker:active{transform:scale(.98)}
+
 .form{
   display:grid;
   grid-template-columns:1fr;
@@ -307,6 +326,10 @@ textarea{min-height:80px;resize:vertical}
           <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
         </label>
 
+        <label>Destino
+          <input id="destination" placeholder="Ex.: Curitiba, cliente X"/>
+        </label>
+
         <label>Data inicial
           <input id="startDate" readonly/>
         </label>
@@ -417,20 +440,36 @@ textarea{min-height:80px;resize:vertical}
         div.appendChild(dot);
       }
 
-      // reservado (qualquer carro)
-      const anyReserved = data.some(r => key>=r.start && key<=r.end);
-      if(anyReserved) div.classList.add("reserved");
+      // reservado (por carro) e marcador
+      const hasTriton = data.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
+      const hasStrada = data.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
+      const anyReserved = hasTriton || hasStrada;
+
+      if(anyReserved){
+        div.classList.add("reserved");
+
+        // marcador: * Triton, # Strada (se ambos, mostra "*#")
+        const mark = document.createElement("span");
+        mark.className = "marker";
+        mark.textContent = (hasTriton ? "*" : "") + (hasStrada ? "#" : "");
+        mark.title = "Toque para ver detalhes";
+        // abre popup SOMENTE ao tocar no marcador
+        mark.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          openDayModal(key);
+        });
+        div.appendChild(mark);
+      }
 
       // seleção
       if(selStart && selEnd && key>selStart && key<selEnd) div.classList.add("range");
       if(key===selStart || key===selEnd) div.classList.add("edge");
 
+      // clique no dia = apenas selecionar (não abre popup)
       div.addEventListener("click", () => {
         pick(key);
-        if (anyReserved) openDayModal(key);
       });
-
-      calEl.appendChild(div);
+calEl.appendChild(div);
     }
   }
 
@@ -474,7 +513,7 @@ textarea{min-height:80px;resize:vertical}
           <div class="tag">${escapeHtml(r.car)}</div>
           <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
           <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
-          ${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
+          ${r.destination ? `<div class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</div>` : ``}${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
         </div>
       `).join("");
     }
@@ -508,7 +547,7 @@ textarea{min-height:80px;resize:vertical}
         <strong>${escapeHtml(r.car)}</strong><br>
         <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span><br>
         <span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
-        ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
+        ${r.destination ? `<br><span class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</span>` : ``}${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
       </div>
       <button class="mini" type="button" data-del="${r.id}">Excluir</button>`;
       listEl.appendChild(div);
@@ -554,6 +593,7 @@ ${it.start} até ${it.end}`)) return;
     if(!whoV) return alert("Informe quem vai usar.");
 
     const motiveV = document.getElementById("motive").value.trim();
+    const destinationV = document.getElementById("destination").value.trim();
     const carV = document.getElementById("car").value;
 
     const data = load();
@@ -567,6 +607,7 @@ ${it.start} até ${it.end}`)) return;
       car: carV,
       who: whoV,
       motive: motiveV,
+      destination: destinationV,
       start: selStart,
       end: selEnd
     });
@@ -576,6 +617,7 @@ ${it.start} até ${it.end}`)) return;
     selStart = null; selEnd = null;
     document.getElementById("who").value="";
     document.getElementById("motive").value="";
+    document.getElementById("destination").value="";
     startInp.value = ""; endInp.value = "";
     selLabel.innerText = "Selecione um período";
 
