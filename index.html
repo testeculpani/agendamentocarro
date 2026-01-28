@@ -19,6 +19,7 @@
       --primary-soft:#cfe3ff;     /* intervalo selecionado */
       --day:#f3f6fb;              /* dia padrão */
       --dayHover:#eaf0fa;
+      --completed:#22c55e;
     }
 
     *{ box-sizing:border-box; }
@@ -141,6 +142,11 @@
 
     .day.reserved{
       background:var(--primary);
+      color:#fff;
+    }
+
+    .day.completed{
+      background: var(--completed);
       color:#fff;
     }
 
@@ -621,13 +627,19 @@
           cell.appendChild(dot);
         }
 
-        // Reserved flags by car
-        const hasTriton = reservas.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
-        const hasStrada = reservas.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
-        const anyReserved = hasTriton || hasStrada;
+        // Reserved flags by car + concluído (verde quando já passou)
+        const todayKey = ymd(new Date());
+
+        const dayRes = reservas.filter(r => key >= r.start && key <= r.end);
+        const hasTriton = dayRes.some(r => r.car === "Triton");
+        const hasStrada = dayRes.some(r => r.car === "Strada");
+        const anyReserved = dayRes.length > 0;
+
+        // Concluído se a reserva que cobre este dia já terminou antes de hoje
+        const isCompleted = dayRes.some(r => r.end < todayKey);
 
         if(anyReserved){
-          cell.classList.add("reserved");
+          cell.classList.add(isCompleted ? "completed" : "reserved");
 
           const mark = document.createElement("span");
           mark.className = "marker";
@@ -638,9 +650,7 @@
             openDayModal(key);
           });
           cell.appendChild(mark);
-        }
-
-        // selection style
+        }// selection style
         if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
         if(key === selStart || key === selEnd) cell.classList.add("edge");
 
