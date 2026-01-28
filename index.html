@@ -19,7 +19,6 @@
       --primary-soft:#cfe3ff;     /* intervalo selecionado */
       --day:#f3f6fb;              /* dia padrão */
       --dayHover:#eaf0fa;
-      --completed:#22c55e;
     }
 
     *{ box-sizing:border-box; }
@@ -142,11 +141,6 @@
 
     .day.reserved{
       background:var(--primary);
-      color:#fff;
-    }
-
-    .day.completed{
-      background: var(--completed);
       color:#fff;
     }
 
@@ -628,18 +622,11 @@
         }
 
         // Reserved flags by car
-        const today = new Date();
-        const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
-
         const hasTriton = reservas.some(r => r.car==="Triton" && key>=r.start && key<=r.end);
         const hasStrada = reservas.some(r => r.car==="Strada" && key>=r.start && key<=r.end);
         const anyReserved = hasTriton || hasStrada;
 
-        const isCompleted = reservas.some(r => r.end < todayKey && key >= r.start && key <= r.end);
-
-        if(isCompleted){
-          cell.classList.add("completed");
-        } else if(anyReserved){
+        if(anyReserved){
           cell.classList.add("reserved");
 
           const mark = document.createElement("span");
