@@ -505,6 +505,15 @@
       return aStart <= bEnd && bStart <= aEnd; // inclusive
     }
 
+    function isDayReservedForCar(dayKey, carName){
+      return reservas.some(r => r.car === carName && dayKey >= r.start && dayKey <= r.end);
+    }
+
+    function rangeHasConflictForCar(startKey, endKey, carName){
+      return reservas.some(r => r.car === carName && rangesOverlap(r.start, r.end, startKey, endKey));
+    }
+
+
     // Mode
     function setMode(newMode){
       mode = newMode;
@@ -569,6 +578,25 @@
 
     // Selection
     function pick(key){
+      const carV = document.getElementById("car").value;
+
+      // Bloqueio: não deixa iniciar seleção em dia já reservado para o MESMO carro
+      if((!selStart || selEnd) && isDayReservedForCar(key, carV)){
+        alert(`Dia já reservado para ${carV}. Escolha outro dia.`);
+        return;
+      }
+
+      // Se já tem início, bloquear se o intervalo escolhido bater com reserva do mesmo carro
+      if(selStart && !selEnd){
+        const startKey = (key < selStart) ? key : selStart;
+        const endKey   = (key < selStart) ? selStart : key;
+
+        if(rangeHasConflictForCar(startKey, endKey, carV)){
+          alert(`Conflito: ${carV} já tem reserva dentro desse período.`);
+          return;
+        }
+      }
+
       if(!selStart || selEnd){
         selStart = key;
         selEnd = null;
