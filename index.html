@@ -20,6 +20,7 @@
       --day:#f3f6fb;              /* dia padrão */
       --dayHover:#eaf0fa;
       --completed:#22c55e;
+      --inprogress:#f59e0b;
     }
 
     *{ box-sizing:border-box; }
@@ -150,6 +151,11 @@
       color:#fff;
     }
 
+    .day.inprogress{
+      background: var(--inprogress);
+      color:#fff;
+    }
+
     .day.range{
       background:var(--primary-soft);
       color:#0b1220;
@@ -231,6 +237,11 @@
     .item.completed{
       background: rgba(34,197,94,.10);
       border-color: rgba(34,197,94,.35);
+    }
+
+    .item.inprogress{
+      background: rgba(245,158,11,.12);
+      border-color: rgba(245,158,11,.35);
     }
 
     .item{
@@ -667,16 +678,24 @@
         // Reserved flags by car + concluído (verde quando já passou)
         const todayKey = ymd(new Date());
 
+        const todayKey = ymd(new Date());
+
         const dayRes = reservas.filter(r => key >= r.start && key <= r.end);
         const hasTriton = dayRes.some(r => r.car === "Triton");
         const hasStrada = dayRes.some(r => r.car === "Strada");
         const anyReserved = dayRes.length > 0;
 
-        // Concluído se a reserva que cobre este dia já terminou antes de hoje
         const isCompleted = dayRes.some(r => r.end < todayKey);
+        const isInProgress = dayRes.some(r => r.start <= todayKey && r.end >= todayKey);
 
         if(anyReserved){
-          cell.classList.add(isCompleted ? "completed" : "reserved");
+          if(isCompleted){
+            cell.classList.add("completed");
+          } else if(isInProgress){
+            cell.classList.add("inprogress");
+          } else {
+            cell.classList.add("reserved");
+          }
 
           const mark = document.createElement("span");
           mark.className = "marker";
@@ -731,7 +750,7 @@
       data.forEach(r => {
         const div = document.createElement("div");
         const todayKey = ymd(new Date());
-        div.className = "item" + (r.end < todayKey ? " completed" : "");
+        div.className = "item" + (r.end < todayKey ? " completed" : (r.start <= todayKey && r.end >= todayKey ? " inprogress" : ""));
         div.innerHTML = `
           <div>
             <strong>${escapeHtml(r.car)}</strong><br>
