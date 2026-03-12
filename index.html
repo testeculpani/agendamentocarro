@@ -55,6 +55,23 @@
       flex-wrap:wrap;
     }
 
+    .titleRow{
+      display:flex;
+      align-items:flex-start;
+      gap:6px;
+    }
+
+    .adminBtn{
+      opacity:.14;
+      font-size:10px;
+      border:none;
+      background:none;
+      cursor:pointer;
+      padding:1px 4px;
+      line-height:1;
+      color:#475569;
+    }
+
     .modeBar{
       margin-top:10px;
       display:flex;
@@ -187,7 +204,8 @@
       color:#0b1220;
     }
 
-    .day.reserved .marker{
+    .day.reserved .marker,
+    .day.completed .marker{
       background: rgba(255,255,255,.92);
     }
 
@@ -226,15 +244,6 @@
 
     .item{
       border:1px solid var(--line);
-    }
-
-    .item.completed{
-      background: rgba(34,197,94,.10);
-      border-color: rgba(34,197,94,.35);
-    }
-
-    .item{
-      border:1px solid var(--line);
       border-radius:12px;
       padding:10px;
       font-size:14px;
@@ -242,6 +251,12 @@
       justify-content:space-between;
       gap:10px;
       align-items:flex-start;
+      background:#fff;
+    }
+
+    .item.completed{
+      background: rgba(34,197,94,.10);
+      border-color: rgba(34,197,94,.35);
     }
 
     .small{
@@ -260,6 +275,8 @@
       cursor:pointer;
       font-weight:700;
       user-select:none;
+      display:none;
+      white-space:nowrap;
     }
 
     /* Modal (bottom-sheet no celular) */
@@ -342,8 +359,13 @@
   <div class="wrap">
     <div class="card top">
       <div>
-        <h1>Reserva de Carros</h1>
-        <div class="sub">Clique 1x (início) e 2x (fim) para reservar • Em STATUS mostra detalhes</div>
+        <div class="titleRow">
+          <div>
+            <h1>Reserva de Carros</h1>
+            <div class="sub">Clique 1x (início) e 2x (fim) para reservar • Em STATUS mostra detalhes</div>
+          </div>
+          <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
+        </div>
 
         <div class="modeBar">
           <button class="btn" id="modeReserve" type="button">RESERVA</button>
@@ -474,7 +496,9 @@
     const modeReserveBtn = document.getElementById("modeReserve");
     const modeStatusBtn = document.getElementById("modeStatus");
     const modeHint = document.getElementById("modeHint");
+    const adminBtn = document.getElementById("adminBtn");
     let mode = "reserve"; // "reserve" | "status"
+    let adminEnabled = false;
 
     // Modal
     const modalWrap = document.getElementById("modalWrap");
@@ -522,7 +546,6 @@
       return reservas.some(r => r.car === carName && rangesOverlap(r.start, r.end, startKey, endKey));
     }
 
-
     // Mode
     function setMode(newMode){
       mode = newMode;
@@ -537,6 +560,18 @@
 
     modeReserveBtn.addEventListener("click", () => setMode("reserve"));
     modeStatusBtn.addEventListener("click", () => setMode("status"));
+
+    // Admin discreto
+    adminBtn.addEventListener("click", () => {
+      const senha = prompt("Senha admin:");
+      if (senha === "2165") {
+        adminEnabled = true;
+        renderList();
+        alert("Modo admin liberado.");
+      } else if (senha !== null) {
+        alert("Senha incorreta");
+      }
+    });
 
     // DOW
     function renderDOW(){
@@ -687,7 +722,9 @@
             openDayModal(key);
           });
           cell.appendChild(mark);
-        }// selection style
+        }
+
+        // selection style
         if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
         if(key === selStart || key === selEnd) cell.classList.add("edge");
 
@@ -705,9 +742,7 @@
     }
 
     // List
-    // EXCLUSÃO DESABILITADA NO APP
     async function del(id){
-      return;
       const it = reservas.find(x => x.id === id);
       if(!it) return;
 
@@ -740,12 +775,16 @@
             <br><span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
             ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
           </div>
-          
+          <button class="mini" type="button" style="${adminEnabled ? 'display:block;' : 'display:none;'}">Excluir</button>
         `;
         listEl.appendChild(div);
-      });
 
-      
+        const btnExcluir = div.querySelector(".mini");
+        btnExcluir.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await del(r.id);
+        });
+      });
     }
 
     // Month navigation
