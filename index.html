@@ -4,446 +4,263 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reserva de Carros – Triton / Strada</title>
-
   <style>
     :root{
-      --bg:#f4f6f8;
+      --bg:#eef4fb;
+      --bg2:#f7fafc;
       --card:#ffffff;
-      --text:#1f2937;
+      --text:#172033;
       --muted:#6b7280;
-      --line:#e5e7eb;
-      --shadow:0 8px 20px rgba(0,0,0,.08);
-
-      --primary:#3b82f6;          /* reservado */
-      --primary-edge:#1e40af;     /* início/fim */
-      --primary-soft:#cfe3ff;     /* intervalo selecionado */
-      --day:#f3f6fb;              /* dia padrão */
-      --dayHover:#eaf0fa;
-      --completed:#22c55e;
+      --line:#dbe4ef;
+      --shadow:0 16px 40px rgba(15, 23, 42, .08);
+      --future:#3b82f6;
+      --current:#f59e0b;
+      --done:#22c55e;
+      --range:#dbeafe;
+      --range-edge:#1d4ed8;
+      --danger:#dc2626;
+      --danger-bg:#fff1f2;
+      --danger-line:#fecdd3;
     }
-
-    *{ box-sizing:border-box; }
-
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:var(--bg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
+      background:
+        radial-gradient(circle at top left, #dbeafe 0%, transparent 35%),
+        radial-gradient(circle at top right, #dcfce7 0%, transparent 30%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
     }
-
-    .wrap{
-      max-width:100%;
-      padding:12px;
-    }
-
-    .card{
-      background:var(--card);
-      border-radius:16px;
+    .wrap{max-width:1180px;margin:0 auto;padding:18px 14px 28px}
+    .hero{
+      background:linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+      border:1px solid var(--line);
+      border-radius:22px;
       box-shadow:var(--shadow);
-      padding:14px;
-      margin-bottom:14px;
+      padding:18px;
+      margin-bottom:16px;
     }
-
-    h1{ font-size:18px; margin:0; }
-    .sub{ font-size:13px; color:var(--muted); margin-top:4px; }
-
-    .top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .titleRow{
-      display:flex;
-      align-items:flex-start;
-      gap:6px;
-    }
-
+    .heroTop{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+    .titleRow{display:flex;align-items:flex-start;gap:8px}
+    h1{margin:0;font-size:22px;letter-spacing:-.02em}
+    .sub{margin-top:6px;font-size:13px;color:var(--muted);line-height:1.45}
     .adminBtn{
-      opacity:.35;
-      font-size:14px;
-      border:none;
-      background:none;
-      cursor:pointer;
-      padding:1px 4px;
-      line-height:1;
-      color:#475569;
+      opacity:.14;font-size:11px;border:none;background:none;color:#475569;cursor:pointer;padding:4px;line-height:1;user-select:none;
     }
-
-    .modeBar{
-      margin-top:10px;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
+    .heroBadges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .badge{
+      border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;color:#334155;font-weight:600;
     }
-
-    .modeHint{ margin:0; }
-
-    @media (max-width:480px){
-      .modeBar{ flex-direction:column; align-items:stretch; }
-      .modeBar .btn{ width:100%; }
-      .modeHint{ width:100%; }
-    }
-
+    .modeBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+    .modeHint{font-size:13px;color:var(--muted)}
     .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      padding:10px 14px;
-      border-radius:12px;
-      font-size:14px;
-      font-weight:600;
-      cursor:pointer;
-      user-select:none;
+      border:1px solid var(--line);background:#fff;color:var(--text);padding:10px 14px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s ease;user-select:none;
     }
-
-    .btn.primary{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
+    .btn:hover{transform:translateY(-1px)}
+    .btn.active{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+    .btn.primary{background:linear-gradient(135deg, #3b82f6, #2563eb);color:#fff;border-color:#2563eb;box-shadow:0 10px 20px rgba(37,99,235,.18)}
+    .btn.secondary{background:#f8fafc}
+    .panel{
+      background:rgba(255,255,255,.86);backdrop-filter: blur(8px);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;
     }
-
-    .btn.active{
-      border-color: rgba(59,130,246,.35);
-      background: rgba(59,130,246,.12);
+    .panelHead{
+      padding:16px 16px 12px;border-bottom:1px solid #edf2f7;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
     }
-
-    /* Calendário */
-    .calendar-card{ padding:12px; background:#e2e8f0; border:1px solid #cbd5e1; }
-
-    .calHead{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:8px;
-      gap:10px;
-    }
-
-    .monthLabel{
-      font-weight:700;
-      font-size:15px;
-      text-transform:capitalize;
-    }
-
-    .cal-grid{
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:6px;
-    }
-
-    .dow{
-      text-align:center;
-      font-size:11px;
-      color:var(--muted);
-    }
-
+    .panelTitle{font-size:16px;font-weight:800}
+    .panelSub{font-size:12px;color:var(--muted);margin-top:4px}
+    .panelBody{padding:14px}
+    .grid{display:grid;grid-template-columns:1.2fr .9fr;gap:16px;align-items:start}
+    .calendarShell{background:#dde7f2;border:1px solid #c9d8e8;border-radius:18px;padding:12px}
+    .calHead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .monthLabel{font-size:16px;font-weight:800;text-transform:capitalize;letter-spacing:-.01em}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .dow{text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px 0}
     .day{
-      min-height:56px;
-      border-radius:12px;
-      background:var(--day);
-      text-align:center;
-      padding-top:6px;
-      cursor:pointer;
-      position:relative;
-      font-weight:650;
-      user-select:none;
-      transition: background .12s ease, transform .06s ease;
+      min-height:70px;border-radius:16px;background:#fff;border:1px solid #d8e1ea;text-align:center;padding-top:8px;cursor:pointer;position:relative;font-weight:700;user-select:none;transition:.15s ease;
     }
-
-    .day:hover{ background:var(--dayHover); }
-    .day:active{ transform:scale(.99); }
-
-    .day.muted{ opacity:.35; cursor:default; }
-
-    .day.reserved{
-      background:var(--primary);
-      color:#fff;
-    }
-
-    .day.completed{
-      background: var(--completed);
-      color:#fff;
-    }
-
-    .day.range{
-      background:var(--primary-soft);
-      color:#0b1220;
-    }
-
-    .day.edge{
-      background:var(--primary-edge);
-      color:#fff;
-    }
-
-    .num{ font-size:14px; }
-
-    .todayDot{
-      position:absolute;
-      top:6px;
-      right:6px;
-      width:6px;
-      height:6px;
-      background:#16a34a;
-      border-radius:50%;
-    }
-
-    /* Marcadores: * Triton, # Strada */
+    .day:hover{background:#f8fbff;transform:translateY(-1px)}
+    .day:active{transform:scale(.99)}
+    .day.muted{opacity:.33;cursor:default;background:#eff4f8}
+    .day.future{background:var(--future);color:#fff;border-color:transparent}
+    .day.current{background:var(--current);color:#fff;border-color:transparent}
+    .day.done{background:var(--done);color:#fff;border-color:transparent}
+    .day.range{background:var(--range);color:#0f172a;border-color:#bfdbfe}
+    .day.edge{background:var(--range-edge);color:#fff;border-color:#1d4ed8}
+    .num{font-size:15px;font-weight:800}
+    .todayDot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:999px;background:#16a34a;box-shadow:0 0 0 3px rgba(34,197,94,.16)}
     .marker{
-      position:absolute;
-      left:6px;
-      top:28px;            /* mais embaixo para não tampar o número */
-      font-size:14px;
-      font-weight:900;
-      line-height:1;
-      padding:2px 6px;
-      border-radius:10px;
-      background: rgba(255,255,255,.80);
-      border:1px solid rgba(0,0,0,.08);
-      color:#0b1220;
+      position:absolute;left:7px;top:31px;font-size:13px;font-weight:900;line-height:1;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.06);color:#0f172a;letter-spacing:.04em;
     }
-
-    .day.reserved .marker,
-    .day.completed .marker{
-      background: rgba(255,255,255,.92);
+    .legend{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .legendItem{border:1px solid #d3dde8;background:#fff;border-radius:12px;padding:7px 10px;font-size:12px;color:#475569;font-weight:600}
+    .legendSwatch{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:-1px}
+    .form{display:grid;gap:10px}
+    .field{display:grid;gap:5px}
+    .field label{font-size:13px;font-weight:700;color:#64748b}
+    input,select,textarea{
+      width:100%;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 13px;font-size:15px;color:var(--text);outline:none;
     }
-
-    /* Form */
-    .form{
-      display:grid;
-      grid-template-columns:1fr;
-      gap:10px;
-    }
-
-    label{
-      font-size:13px;
-      color:var(--muted);
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-    }
-
-    input, select, textarea{
-      padding:12px;
-      font-size:15px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#fff;
-    }
-
-    textarea{ min-height:80px; resize:vertical; }
-
-    /* Lista */
-    .list{
-      margin-top:12px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
+    input:focus,select:focus,textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.10)}
+    textarea{min-height:90px;resize:vertical}
+    .readonlyHint{font-size:12px;color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 12px}
+    .formActions{display:flex;gap:8px;flex-wrap:wrap}
+    .cardsTitle{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;margin-bottom:6px}
+    .cardsTitle strong{font-size:14px}
+    .list{display:grid;gap:10px;margin-top:10px}
     .item{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:10px;
-      font-size:14px;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:flex-start;
-      background:#fff;
+      border:1px solid var(--line);border-radius:18px;padding:12px;background:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;box-shadow:0 6px 16px rgba(15,23,42,.03);
     }
-
-    .item.completed{
-      background: rgba(34,197,94,.10);
-      border-color: rgba(34,197,94,.35);
-    }
-
-    .small{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.35;
-    }
-
+    .item.done{background:rgba(34,197,94,.09);border-color:rgba(34,197,94,.30)}
+    .item.current{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.30)}
+    .itemHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+    .carTag{font-size:12px;font-weight:800;border-radius:999px;padding:5px 9px;background:#eff6ff;color:#1d4ed8}
+    .statusTag{font-size:11px;font-weight:800;border-radius:999px;padding:5px 8px;background:#f8fafc;color:#475569;border:1px solid #e2e8f0}
+    .statusTag.future{background:#eff6ff;color:#1d4ed8}
+    .statusTag.current{background:#fff7ed;color:#c2410c}
+    .statusTag.done{background:#f0fdf4;color:#15803d}
+    .itemText{font-size:13px;color:#475569;line-height:1.45}
+    .adminActions{display:flex;gap:8px;flex-wrap:wrap}
     .mini{
-      padding:8px 10px;
-      border-radius:10px;
-      border:1px solid #fecaca;
-      background:#fff5f5;
-      color:#dc2626;
-      font-size:13px;
-      cursor:pointer;
-      font-weight:700;
-      user-select:none;
-      display:none;
-      white-space:nowrap;
+      padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:800;cursor:pointer;display:none;white-space:nowrap;
     }
-
-    /* Modal (bottom-sheet no celular) */
+    .mini.edit{color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff}
+    .mini.delete{color:var(--danger);border-color:var(--danger-line);background:var(--danger-bg)}
+    .empty{border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;border-radius:16px;padding:16px;text-align:center;font-size:13px}
     .modalWrap{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.45);
-      display:none;
-      align-items:flex-end;
-      justify-content:center;
-      padding:12px;
-      z-index:999;
+      position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:999;
     }
-
-    .modalWrap.show{ display:flex; }
-
+    .modalWrap.show{display:flex}
     .modal{
-      width:min(720px, 100%);
-      background:#fff;
-      border-radius:16px;
-      box-shadow:0 20px 60px rgba(0,0,0,.25);
-      overflow:hidden;
+      width:min(720px, 100%);background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.28);
     }
-
-    .modalH{
-      padding:14px 14px 10px 14px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:10px;
+    .modalHead{padding:16px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .modalTitle{font-size:16px;font-weight:800}
+    .modalBody{padding:16px;max-height:70vh;overflow:auto}
+    .modalClose{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer;font-weight:700}
+    .modalCard{border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;background:#fff}
+    @media (max-width: 860px){
+      .grid{grid-template-columns:1fr}
+      .modalWrap{align-items:flex-end}
     }
-
-    .modalTitle{ font-weight:800; }
-
-    .modalBody{ padding:14px; }
-
-    .modalClose{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:12px;
-      padding:8px 10px;
-      cursor:pointer;
-      font-weight:700;
-      user-select:none;
-    }
-
-    .modalCard{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px;
-      margin-bottom:10px;
-    }
-
-    .tag{
-      display:inline-block;
-      font-size:12px;
-      font-weight:800;
-      padding:4px 8px;
-      border-radius:999px;
-      background:#eef2ff;
-      color:#1e40af;
-      margin-bottom:8px;
-    }
-
-    /* Desktop */
-    @media (min-width:768px){
-      .wrap{ max-width:1000px; margin:auto; }
-      .grid{
-        display:grid;
-        grid-template-columns:1.2fr .8fr;
-        gap:14px;
-        align-items:start;
-      }
-      .modalWrap{ align-items:center; }
+    @media (max-width: 480px){
+      .modeBar{flex-direction:column;align-items:stretch}
+      .modeBar .btn{width:100%}
+      .modeHint{width:100%}
     }
   </style>
 </head>
-
 <body>
   <div class="wrap">
-    <div class="card top">
-      <div>
-        <div class="titleRow">
-          <div>
-            <h1>Reserva de Carros</h1>
-            <div class="sub">Clique 1x (início) e 2x (fim) para reservar • Em STATUS mostra detalhes</div>
+    <div class="hero">
+      <div class="heroTop">
+        <div>
+          <div class="titleRow">
+            <div>
+              <h1>Reserva de Carros</h1>
+              <div class="sub">Sistema de agendamento compartilhado da Grilazer para Triton e Strada.</div>
+            </div>
+            <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
           </div>
-          <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
-        </div>
-
-        <div class="modeBar">
-          <button class="btn" id="modeReserve" type="button">RESERVA</button>
-          <button class="btn" id="modeStatus" type="button">STATUS</button>
-          <div class="sub modeHint" id="modeHint">Modo: RESERVA</div>
+          <div class="modeBar">
+            <button class="btn active" id="modeReserve" type="button">RESERVA</button>
+            <button class="btn" id="modeStatus" type="button">STATUS</button>
+            <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
+          </div>
+          <div class="heroBadges">
+            <div class="badge">Clique 1x para início e 2x para fim</div>
+            <div class="badge">* Triton • # Strada</div>
+            <div class="badge">Atualização em tempo real</div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="grid">
-      <!-- CALENDÁRIO -->
-      <div class="card calendar-card">
-        <div class="calHead">
-          <button class="btn" id="prevBtn" type="button">◀</button>
-          <div class="monthLabel" id="monthLabel"></div>
-          <button class="btn" id="nextBtn" type="button">▶</button>
+      <section class="panel">
+        <div class="panelHead">
+          <div>
+            <div class="panelTitle">Calendário de uso</div>
+            <div class="panelSub">Reserve pelo calendário ou consulte detalhes no modo STATUS.</div>
+          </div>
+          <div class="calHead">
+            <button class="btn secondary" id="prevBtn" type="button">◀</button>
+            <div class="monthLabel" id="monthLabel"></div>
+            <button class="btn secondary" id="nextBtn" type="button">▶</button>
+          </div>
         </div>
-
-        <div class="cal-grid" id="dow"></div>
-        <div class="cal-grid" id="cal"></div>
-
-        <div class="small" style="margin-top:8px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
-          <span><strong>*</strong> Triton</span>
-          <span><strong>#</strong> Strada</span>
+        <div class="panelBody">
+          <div class="calendarShell">
+            <div class="cal-grid" id="dow"></div>
+            <div class="cal-grid" id="cal"></div>
+            <div class="legend">
+              <div class="legendItem"><strong>*</strong> Triton</div>
+              <div class="legendItem"><strong>#</strong> Strada</div>
+              <div class="legendItem"><span class="legendSwatch" style="background:#3b82f6"></span>Futuro</div>
+              <div class="legendItem"><span class="legendSwatch" style="background:#f59e0b"></span>Em andamento</div>
+              <div class="legendItem"><span class="legendSwatch" style="background:#22c55e"></span>Concluído</div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- FORM + LISTA -->
-      <div class="card">
-        <div class="sub" id="selLabel">Selecione um período</div>
+      <section class="panel">
+        <div class="panelHead">
+          <div>
+            <div class="panelTitle">Cadastro da reserva</div>
+            <div class="panelSub" id="selLabel">Selecione um período</div>
+          </div>
+        </div>
+        <div class="panelBody">
+          <form id="form" class="form">
+            <div class="field">
+              <label for="car">Carro</label>
+              <select id="car">
+                <option>Triton</option>
+                <option>Strada</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="who">Quem vai usar</label>
+              <input id="who" placeholder="Nome" />
+            </div>
+            <div class="field">
+              <label for="destination">Destino</label>
+              <input id="destination" placeholder="Ex.: Cascavel, cliente X" />
+            </div>
+            <div class="field">
+              <label for="motive">Motivo</label>
+              <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
+            </div>
+            <div class="field">
+              <label for="startDate">Data inicial</label>
+              <input id="startDate" readonly />
+            </div>
+            <div class="field">
+              <label for="endDate">Data final</label>
+              <input id="endDate" readonly />
+            </div>
+            <div class="readonlyHint">No modo RESERVA, escolha as datas clicando no calendário. No modo STATUS, clicar no dia mostra os detalhes.</div>
+            <div class="formActions">
+              <button class="btn primary" type="submit" id="saveBtn">Salvar reserva</button>
+              <button class="btn secondary" type="button" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
+            </div>
+          </form>
 
-        <form id="form" class="form">
-          <label>
-            Carro
-            <select id="car">
-              <option>Triton</option>
-              <option>Strada</option>
-            </select>
-          </label>
-
-          <label>
-            Quem vai usar
-            <input id="who" placeholder="Nome" />
-          </label>
-
-          <label>
-            Destino
-            <input id="destination" placeholder="Ex.: Curitiba, cliente X" />
-          </label>
-
-          <label>
-            Motivo
-            <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
-          </label>
-
-          <label>
-            Data inicial
-            <input id="startDate" readonly />
-          </label>
-
-          <label>
-            Data final
-            <input id="endDate" readonly />
-          </label>
-
-          <button class="btn primary" type="submit">Salvar reserva</button>
-        </form>
-
-        <div class="list" id="list"></div>
-      </div>
+          <div class="cardsTitle">
+            <strong>Histórico / reservas</strong>
+            <span class="small" id="countInfo">0 registro(s)</span>
+          </div>
+          <div class="list" id="list"></div>
+        </div>
+      </section>
     </div>
   </div>
 
-  <!-- MODAL -->
   <div class="modalWrap" id="modalWrap" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modalH">
+      <div class="modalHead">
         <div>
           <div class="modalTitle" id="modalTitle">Detalhes</div>
           <div class="small" id="modalSub"></div>
@@ -454,20 +271,19 @@
     </div>
   </div>
 
-  <!-- APP + FIREBASE (tudo aqui) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
       getFirestore,
       collection,
       addDoc,
+      updateDoc,
       onSnapshot,
       deleteDoc,
       doc,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // ===== Firebase config (SEU) =====
     const firebaseConfig = {
       apiKey: "AIzaSyCVQBCqrJqmd4bwqM1HiiKN1dbdy6qVOtA",
       authDomain: "agendacarrosgrilazer.firebaseapp.com",
@@ -481,48 +297,49 @@
     const db = getFirestore(app);
     const reservasRef = collection(db, "reservas");
 
-    // ===== Elements =====
     const dowEl = document.getElementById("dow");
     const calEl = document.getElementById("cal");
     const monthLabel = document.getElementById("monthLabel");
     const selLabel = document.getElementById("selLabel");
     const listEl = document.getElementById("list");
+    const countInfo = document.getElementById("countInfo");
+
+    const whoEl = document.getElementById("who");
+    const carEl = document.getElementById("car");
+    const destinationEl = document.getElementById("destination");
+    const motiveEl = document.getElementById("motive");
     const startInp = document.getElementById("startDate");
     const endInp = document.getElementById("endDate");
+    const saveBtn = document.getElementById("saveBtn");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
 
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
-
-    // Mode controls
+    const adminBtn = document.getElementById("adminBtn");
     const modeReserveBtn = document.getElementById("modeReserve");
     const modeStatusBtn = document.getElementById("modeStatus");
     const modeHint = document.getElementById("modeHint");
-    const adminBtn = document.getElementById("adminBtn");
-    let mode = "reserve"; // "reserve" | "status"
-    let adminEnabled = false;
 
-    // Modal
     const modalWrap = document.getElementById("modalWrap");
     const modalClose = document.getElementById("modalClose");
     const modalTitle = document.getElementById("modalTitle");
     const modalSub = document.getElementById("modalSub");
     const modalBody = document.getElementById("modalBody");
 
-    // State
+    let mode = "reserve";
+    let adminEnabled = false;
+    let editingId = null;
     let view = new Date();
     view = new Date(view.getFullYear(), view.getMonth(), 1);
     let selStart = null;
     let selEnd = null;
+    let reservas = [];
 
-    // Firestore cache (live)
-    let reservas = []; // [{id, car, who, destination, motive, start, end, createdAt}]
-
-    // Helpers
     const pad = (n) => String(n).padStart(2, "0");
-    const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
     function brFromYmd(s){
-      const [Y, M, D] = s.split("-").map(Number);
+      const [Y,M,D] = s.split("-").map(Number);
       return `${pad(D)}/${pad(M)}/${Y}`;
     }
 
@@ -536,76 +353,110 @@
     }
 
     function rangesOverlap(aStart, aEnd, bStart, bEnd){
-      return aStart <= bEnd && bStart <= aEnd; // inclusive
+      return aStart <= bEnd && bStart <= aEnd;
     }
 
-    function isDayReservedForCar(dayKey, carName){
-      return reservas.some(r => r.car === carName && dayKey >= r.start && dayKey <= r.end);
+    function getStatus(reserva){
+      const todayKey = ymd(new Date());
+      if(reserva.end < todayKey) return "done";
+      if(reserva.start <= todayKey && reserva.end >= todayKey) return "current";
+      return "future";
     }
 
-    function rangeHasConflictForCar(startKey, endKey, carName){
-      return reservas.some(r => r.car === carName && rangesOverlap(r.start, r.end, startKey, endKey));
+    function statusLabel(status){
+      if(status === "done") return "Concluído";
+      if(status === "current") return "Em andamento";
+      return "Futuro";
     }
 
-    // Mode
+    function statusClassName(status){
+      if(status === "done") return "done";
+      if(status === "current") return "current";
+      return "future";
+    }
+
     function setMode(newMode){
       mode = newMode;
       modeReserveBtn.classList.toggle("active", mode === "reserve");
       modeStatusBtn.classList.toggle("active", mode === "status");
-      modeHint.textContent =
-        "Modo: " +
-        (mode === "reserve"
-          ? "RESERVA (seleciona período)"
-          : "STATUS (mostra detalhes do dia)");
+      modeHint.textContent = mode === "reserve"
+        ? "Modo: RESERVA (seleciona período)"
+        : "Modo: STATUS (mostra detalhes do dia)";
     }
 
     modeReserveBtn.addEventListener("click", () => setMode("reserve"));
     modeStatusBtn.addEventListener("click", () => setMode("status"));
 
-    // Admin discreto
     adminBtn.addEventListener("click", () => {
       const senha = prompt("Senha admin:");
       if (senha === "2165") {
         adminEnabled = true;
         renderList();
-        alert("Modo admin liberado.");
+        alert("Modo administrador liberado.");
       } else if (senha !== null) {
         alert("Senha incorreta");
       }
     });
 
-    // DOW
+    function clearSelection(){
+      selStart = null;
+      selEnd = null;
+      startInp.value = "";
+      endInp.value = "";
+      selLabel.textContent = editingId ? "Editando reserva" : "Selecione um período";
+      renderCalendar();
+    }
+
+    function resetForm(){
+      editingId = null;
+      whoEl.value = "";
+      destinationEl.value = "";
+      motiveEl.value = "";
+      carEl.value = "Triton";
+      saveBtn.textContent = "Salvar reserva";
+      cancelEditBtn.style.display = "none";
+      selLabel.textContent = "Selecione um período";
+      clearSelection();
+    }
+
+    cancelEditBtn.addEventListener("click", resetForm);
+
     function renderDOW(){
       dowEl.innerHTML = "";
       ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach((d) => {
         const el = document.createElement("div");
         el.className = "dow";
-        el.innerText = d;
+        el.textContent = d;
         dowEl.appendChild(el);
       });
     }
 
-    // Modal
     function openDayModal(key){
       const dayRes = reservas
         .filter(r => key >= r.start && key <= r.end)
-        .sort((a,b) => (a.car.localeCompare(b.car) || a.start.localeCompare(b.start)));
+        .sort((a,b) => a.car.localeCompare(b.car) || a.start.localeCompare(b.start));
 
       modalTitle.textContent = "Reservas do dia";
       modalSub.textContent = brFromYmd(key);
 
       if(!dayRes.length){
-        modalBody.innerHTML = `<div class="small">Nenhuma reserva para este dia.</div>`;
+        modalBody.innerHTML = '<div class="empty">Nenhuma reserva para este dia.</div>';
       } else {
-        modalBody.innerHTML = dayRes.map(r => `
-          <div class="modalCard">
-            <div class="tag">${escapeHtml(r.car)}</div>
-            <div><b>Para:</b> ${escapeHtml(r.who || "")}</div>
-            ${r.destination ? `<div class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</div>` : ``}
-            <div class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
-            ${r.motive ? `<div class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</div>` : ``}
-          </div>
-        `).join("");
+        modalBody.innerHTML = dayRes.map(r => {
+          const st = getStatus(r);
+          return `
+            <div class="modalCard">
+              <div class="itemHead">
+                <span class="carTag">${escapeHtml(r.car)}</span>
+                <span class="statusTag ${statusClassName(st)}">${statusLabel(st)}</span>
+              </div>
+              <div><strong>Para:</strong> ${escapeHtml(r.who || "")}</div>
+              ${r.destination ? `<div class="small"><strong>Destino:</strong> ${escapeHtml(r.destination)}</div>` : ``}
+              <div class="small"><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
+              ${r.motive ? `<div class="small"><strong>Motivo:</strong> ${escapeHtml(r.motive)}</div>` : ``}
+            </div>
+          `;
+        }).join("");
       }
 
       modalWrap.classList.add("show");
@@ -618,23 +469,41 @@
     }
 
     modalClose.addEventListener("click", closeModal);
-    modalWrap.addEventListener("click", (e) => { if(e.target === modalWrap) closeModal(); });
-    document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
+    modalWrap.addEventListener("click", (e) => {
+      if(e.target === modalWrap) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape") closeModal();
+    });
 
-    // Selection
+    function isDayReservedForCar(dayKey, carName){
+      return reservas.some(r =>
+        r.id !== editingId &&
+        r.car === carName &&
+        dayKey >= r.start &&
+        dayKey <= r.end
+      );
+    }
+
+    function rangeHasConflictForCar(startKey, endKey, carName){
+      return reservas.some(r =>
+        r.id !== editingId &&
+        r.car === carName &&
+        rangesOverlap(r.start, r.end, startKey, endKey)
+      );
+    }
+
     function pick(key){
-      const carV = document.getElementById("car").value;
+      const carV = carEl.value;
 
-      // Bloqueio: não deixa iniciar seleção em dia já reservado para o MESMO carro
       if((!selStart || selEnd) && isDayReservedForCar(key, carV)){
         alert(`Dia já reservado para ${carV}. Escolha outro dia.`);
         return;
       }
 
-      // Se já tem início, bloquear se o intervalo escolhido bater com reserva do mesmo carro
       if(selStart && !selEnd){
-        const startKey = (key < selStart) ? key : selStart;
-        const endKey   = (key < selStart) ? selStart : key;
+        const startKey = key < selStart ? key : selStart;
+        const endKey = key < selStart ? selStart : key;
 
         if(rangeHasConflictForCar(startKey, endKey, carV)){
           alert(`Conflito: ${carV} já tem reserva dentro desse período.`);
@@ -656,28 +525,29 @@
       endInp.value = selEnd || "";
 
       if(selStart && selEnd){
-        selLabel.textContent = `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
+        selLabel.textContent = editingId
+          ? `Editando período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`
+          : `Período: ${brFromYmd(selStart)} até ${brFromYmd(selEnd)}`;
       } else if(selStart){
-        selLabel.textContent = `Início: ${brFromYmd(selStart)} (clique no fim)`;
+        selLabel.textContent = editingId
+          ? `Editando início: ${brFromYmd(selStart)} (clique no fim)`
+          : `Início: ${brFromYmd(selStart)} (clique no fim)`;
       } else {
-        selLabel.textContent = "Selecione um período";
+        selLabel.textContent = editingId ? "Editando reserva" : "Selecione um período";
       }
 
       renderCalendar();
-      renderList();
     }
 
-    // Calendar
     function renderCalendar(){
       calEl.innerHTML = "";
-      monthLabel.innerText = view.toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
+      monthLabel.textContent = view.toLocaleDateString("pt-BR", { month:"long", year:"numeric" });
 
       const y = view.getFullYear();
       const m = view.getMonth();
       const firstDow = new Date(y, m, 1).getDay();
       const days = new Date(y, m + 1, 0).getDate();
 
-      // blanks
       for(let i=0; i<firstDow; i++){
         const blank = document.createElement("div");
         blank.className = "day muted";
@@ -687,32 +557,30 @@
       for(let i=1; i<=days; i++){
         const d = new Date(y, m, i);
         const key = ymd(d);
-
         const cell = document.createElement("div");
         cell.className = "day";
         cell.innerHTML = `<div class="num">${i}</div>`;
 
-        // today dot
         const today = new Date();
-        if(d.getFullYear()===today.getFullYear() && d.getMonth()===today.getMonth() && d.getDate()===today.getDate()){
+        if(d.getFullYear() === today.getFullYear() && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()){
           const dot = document.createElement("span");
           dot.className = "todayDot";
           cell.appendChild(dot);
         }
 
-        // Reserved flags by car + concluído (verde quando já passou)
-        const todayKey = ymd(new Date());
-
         const dayRes = reservas.filter(r => key >= r.start && key <= r.end);
         const hasTriton = dayRes.some(r => r.car === "Triton");
         const hasStrada = dayRes.some(r => r.car === "Strada");
-        const anyReserved = dayRes.length > 0;
 
-        // Concluído se a reserva que cobre este dia já terminou antes de hoje
-        const isCompleted = dayRes.some(r => r.end < todayKey);
-
-        if(anyReserved){
-          cell.classList.add(isCompleted ? "completed" : "reserved");
+        if(dayRes.length){
+          const statuses = dayRes.map(getStatus);
+          if(statuses.includes("current")){
+            cell.classList.add("current");
+          } else if(statuses.every(s => s === "done")){
+            cell.classList.add("done");
+          } else {
+            cell.classList.add("future");
+          }
 
           const mark = document.createElement("span");
           mark.className = "marker";
@@ -725,11 +593,9 @@
           cell.appendChild(mark);
         }
 
-        // selection style
         if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
         if(key === selStart || key === selEnd) cell.classList.add("edge");
 
-        // click behavior
         cell.addEventListener("click", () => {
           if(mode === "reserve"){
             pick(key);
@@ -742,53 +608,87 @@
       }
     }
 
-    // List
     async function del(id){
       const it = reservas.find(x => x.id === id);
       if(!it) return;
-
       if(!confirm(`Excluir reserva?\n${it.car} - ${it.who}\n${it.start} até ${it.end}`)) return;
-
       await deleteDoc(doc(db, "reservas", id));
+    }
+
+    function startEdit(id){
+      const item = reservas.find(r => r.id === id);
+      if(!item) return;
+
+      editingId = id;
+      carEl.value = item.car || "Triton";
+      whoEl.value = item.who || "";
+      destinationEl.value = item.destination || "";
+      motiveEl.value = item.motive || "";
+      selStart = item.start;
+      selEnd = item.end;
+      startInp.value = item.start;
+      endInp.value = item.end;
+      saveBtn.textContent = "Salvar alterações";
+      cancelEditBtn.style.display = "inline-block";
+      selLabel.textContent = `Editando período: ${brFromYmd(item.start)} até ${brFromYmd(item.end)}`;
+
+      const monthBase = new Date(item.start + "T00:00:00");
+      view = new Date(monthBase.getFullYear(), monthBase.getMonth(), 1);
+      renderCalendar();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function renderList(){
       listEl.innerHTML = "";
-
-      const data = reservas
-        .slice()
-        .sort((a,b) => (a.start.localeCompare(b.start)));
+      const data = reservas.slice().sort((a,b) => a.start.localeCompare(b.start));
+      countInfo.textContent = `${data.length} registro(s)`;
 
       if(!data.length){
-        listEl.innerHTML = `<div class="small">Nenhuma reserva ainda.</div>`;
+        listEl.innerHTML = '<div class="empty">Nenhuma reserva ainda.</div>';
         return;
       }
 
       data.forEach(r => {
+        const st = getStatus(r);
         const div = document.createElement("div");
-        const todayKey = ymd(new Date());
-        div.className = "item" + (r.end < todayKey ? " completed" : "");
+        div.className = `item ${statusClassName(st)}`;
+
         div.innerHTML = `
           <div>
-            <strong>${escapeHtml(r.car)}</strong><br>
-            <span class="small"><b>Para:</b> ${escapeHtml(r.who || "")}</span>
-            ${r.destination ? `<br><span class="small"><b>Destino:</b> ${escapeHtml(r.destination)}</span>` : ``}
-            <br><span class="small"><b>Período:</b> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</span>
-            ${r.motive ? `<br><span class="small"><b>Motivo:</b> ${escapeHtml(r.motive)}</span>` : ``}
+            <div class="itemHead">
+              <span class="carTag">${escapeHtml(r.car)}</span>
+              <span class="statusTag ${statusClassName(st)}">${statusLabel(st)}</span>
+            </div>
+            <div class="itemText">
+              <strong>Para:</strong> ${escapeHtml(r.who || "")}
+              ${r.destination ? `<br><strong>Destino:</strong> ${escapeHtml(r.destination)}` : ``}
+              <br><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}
+              ${r.motive ? `<br><strong>Motivo:</strong> ${escapeHtml(r.motive)}` : ``}
+            </div>
           </div>
-          <button class="mini" type="button" style="${adminEnabled ? 'display:block;' : 'display:none;'}">Excluir</button>
+          <div class="adminActions">
+            <button class="mini edit" type="button" style="${adminEnabled ? 'display:block;' : 'display:none;'}">Editar</button>
+            <button class="mini delete" type="button" style="${adminEnabled ? 'display:block;' : 'display:none;'}">Excluir</button>
+          </div>
         `;
-        listEl.appendChild(div);
 
-        const btnExcluir = div.querySelector(".mini");
-        btnExcluir.addEventListener("click", async (e) => {
+        const btnEdit = div.querySelector(".edit");
+        const btnDelete = div.querySelector(".delete");
+
+        btnEdit.addEventListener("click", (e) => {
+          e.stopPropagation();
+          startEdit(r.id);
+        });
+
+        btnDelete.addEventListener("click", async (e) => {
           e.stopPropagation();
           await del(r.id);
         });
+
+        listEl.appendChild(div);
       });
     }
 
-    // Month navigation
     prevBtn.addEventListener("click", () => {
       view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
       renderCalendar();
@@ -799,48 +699,50 @@
       renderCalendar();
     });
 
-    // Submit -> Firestore
     document.getElementById("form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
 
-      const whoV = document.getElementById("who").value.trim();
+      const whoV = whoEl.value.trim();
       if(!whoV) return alert("Informe quem vai usar.");
 
-      const destinationV = document.getElementById("destination").value.trim();
-      const motiveV = document.getElementById("motive").value.trim();
-      const carV = document.getElementById("car").value;
+      const destinationV = destinationEl.value.trim();
+      const motiveV = motiveEl.value.trim();
+      const carV = carEl.value;
 
-      // conflito por carro (usa cache local do Firestore)
-      const conflict = reservas.some(r => r.car === carV && rangesOverlap(r.start, r.end, selStart, selEnd));
+      const conflict = reservas.some(r =>
+        r.id !== editingId &&
+        r.car === carV &&
+        rangesOverlap(r.start, r.end, selStart, selEnd)
+      );
+
       if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
 
-      await addDoc(reservasRef, {
-        car: carV,
-        who: whoV,
-        destination: destinationV,
-        motive: motiveV,
-        start: selStart,
-        end: selEnd,
-        createdAt: serverTimestamp()
-      });
+      if(editingId){
+        await updateDoc(doc(db, "reservas", editingId), {
+          car: carV,
+          who: whoV,
+          destination: destinationV,
+          motive: motiveV,
+          start: selStart,
+          end: selEnd
+        });
+      } else {
+        await addDoc(reservasRef, {
+          car: carV,
+          who: whoV,
+          destination: destinationV,
+          motive: motiveV,
+          start: selStart,
+          end: selEnd,
+          createdAt: serverTimestamp()
+        });
+      }
 
-      // reset selection + inputs
-      selStart = null;
-      selEnd = null;
-      document.getElementById("who").value = "";
-      document.getElementById("destination").value = "";
-      document.getElementById("motive").value = "";
-      startInp.value = "";
-      endInp.value = "";
-      selLabel.textContent = "Selecione um período";
-
-      renderCalendar();
-      renderList();
+      resetForm();
     });
 
-    // Live sync (todos veem igual)
     onSnapshot(reservasRef, (snap) => {
       reservas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderCalendar();
@@ -850,7 +752,6 @@
       alert("Erro ao conectar no Firestore. Confira as regras (Rules) e o Hosting.");
     });
 
-    // Init
     renderDOW();
     setMode("reserve");
     renderCalendar();
