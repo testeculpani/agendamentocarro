@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reserva de Carros – Triton / Strada</title>
+  <title>Reserva de Carros – Grilazer</title>
+
   <style>
     :root{
       --bg:#eef4fb;
@@ -13,17 +14,16 @@
       --muted:#6b7280;
       --line:#dbe4ef;
       --shadow:0 16px 40px rgba(15, 23, 42, .08);
-      --future:#3b82f6;
-      --current:#f59e0b;
-      --done:#22c55e;
       --range:#dbeafe;
       --range-edge:#1d4ed8;
       --danger:#dc2626;
       --danger-bg:#fff1f2;
       --danger-line:#fecdd3;
     }
+
     *{box-sizing:border-box}
     html,body{height:100%}
+
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -33,7 +33,13 @@
         radial-gradient(circle at top right, #dcfce7 0%, transparent 30%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
-    .wrap{max-width:1180px;margin:0 auto;padding:18px 14px 28px}
+
+    .wrap{
+      max-width:1180px;
+      margin:0 auto;
+      padding:18px 14px 28px;
+    }
+
     .hero{
       background:linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
       border:1px solid var(--line);
@@ -42,108 +48,534 @@
       padding:18px;
       margin-bottom:16px;
     }
-    .heroTop{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
-    .titleRow{display:flex;align-items:flex-start;gap:8px}
-    h1{margin:0;font-size:22px;letter-spacing:-.02em}
-    .sub{margin-top:6px;font-size:13px;color:var(--muted);line-height:1.45}
+
+    .heroTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .titleRow{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+    }
+
+    h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:-.02em;
+    }
+
+    .sub{
+      margin-top:6px;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
     .adminBtn{
-      opacity:.14;font-size:11px;border:none;background:none;color:#475569;cursor:pointer;padding:4px;line-height:1;user-select:none;
+      opacity:.14;
+      font-size:11px;
+      border:none;
+      background:none;
+      color:#475569;
+      cursor:pointer;
+      padding:4px;
+      line-height:1;
+      user-select:none;
     }
-    .heroBadges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+
+    .heroBadges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+    }
+
     .badge{
-      border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:12px;color:#334155;font-weight:600;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      color:#334155;
+      font-weight:600;
     }
-    .modeBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
-    .modeHint{font-size:13px;color:var(--muted)}
+
+    .modeBar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:12px;
+    }
+
+    .modeHint{
+      font-size:13px;
+      color:var(--muted);
+    }
+
     .btn{
-      border:1px solid var(--line);background:#fff;color:var(--text);padding:10px 14px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s ease;user-select:none;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
     }
+
     .btn:hover{transform:translateY(-1px)}
-    .btn.active{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
-    .btn.primary{background:linear-gradient(135deg, #3b82f6, #2563eb);color:#fff;border-color:#2563eb;box-shadow:0 10px 20px rgba(37,99,235,.18)}
-    .btn.secondary{background:#f8fafc}
+
+    .btn.active{
+      border-color:#bfdbfe;
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg, #3b82f6, #2563eb);
+      color:#fff;
+      border-color:#2563eb;
+      box-shadow:0 10px 20px rgba(37,99,235,.18);
+    }
+
+    .btn.secondary{
+      background:#f8fafc;
+    }
+
     .panel{
-      background:rgba(255,255,255,.86);backdrop-filter: blur(8px);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;
+      background:rgba(255,255,255,.86);
+      backdrop-filter:blur(8px);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
     }
+
     .panelHead{
-      padding:16px 16px 12px;border-bottom:1px solid #edf2f7;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+      padding:16px 16px 12px;
+      border-bottom:1px solid #edf2f7;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
     }
-    .panelTitle{font-size:16px;font-weight:800}
-    .panelSub{font-size:12px;color:var(--muted);margin-top:4px}
-    .panelBody{padding:14px}
-    .grid{display:grid;grid-template-columns:1.2fr .9fr;gap:16px;align-items:start}
-    .calendarShell{background:#dde7f2;border:1px solid #c9d8e8;border-radius:18px;padding:12px}
-    .calHead{display:flex;justify-content:space-between;align-items:center;gap:10px}
-    .monthLabel{font-size:16px;font-weight:800;text-transform:capitalize;letter-spacing:-.01em}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-    .dow{text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:4px 0}
+
+    .panelTitle{
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .panelSub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .panelBody{
+      padding:14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.2fr .9fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .calendarShell{
+      background:#dde7f2;
+      border:1px solid #c9d8e8;
+      border-radius:18px;
+      padding:12px;
+    }
+
+    .calHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+
+    .monthLabel{
+      font-size:16px;
+      font-weight:800;
+      text-transform:capitalize;
+      letter-spacing:-.01em;
+    }
+
+    .cal-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:8px;
+    }
+
+    .dow{
+      text-align:center;
+      font-size:11px;
+      font-weight:700;
+      color:#64748b;
+      padding:4px 0;
+    }
+
     .day{
-      min-height:70px;border-radius:16px;background:#fff;border:1px solid #d8e1ea;text-align:center;padding-top:8px;cursor:pointer;position:relative;font-weight:700;user-select:none;transition:.15s ease;
+      min-height:82px;
+      border-radius:16px;
+      background:#fff;
+      border:1px solid #d8e1ea;
+      text-align:center;
+      padding:8px 6px 6px;
+      cursor:pointer;
+      position:relative;
+      font-weight:700;
+      user-select:none;
+      transition:.15s ease;
     }
-    .day:hover{background:#f8fbff;transform:translateY(-1px)}
+
+    .day:hover{
+      background:#f8fbff;
+      transform:translateY(-1px);
+    }
+
     .day:active{transform:scale(.99)}
-    .day.muted{opacity:.33;cursor:default;background:#eff4f8}
-    .day.future{background:var(--future);color:#fff;border-color:transparent}
-    .day.current{background:var(--current);color:#fff;border-color:transparent}
-    .day.done{background:var(--done);color:#fff;border-color:transparent}
-    .day.range{background:var(--range);color:#0f172a;border-color:#bfdbfe}
-    .day.edge{background:var(--range-edge);color:#fff;border-color:#1d4ed8}
-    .num{font-size:15px;font-weight:800}
-    .todayDot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:999px;background:#16a34a;box-shadow:0 0 0 3px rgba(34,197,94,.16)}
-    .marker{
-      position:absolute;left:7px;top:31px;font-size:13px;font-weight:900;line-height:1;padding:3px 7px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.06);color:#0f172a;letter-spacing:.04em;
+
+    .day.muted{
+      opacity:.33;
+      cursor:default;
+      background:#eff4f8;
     }
-    .legend{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-    .legendItem{border:1px solid #d3dde8;background:#fff;border-radius:12px;padding:7px 10px;font-size:12px;color:#475569;font-weight:600}
-    .legendSwatch{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:-1px}
-    .form{display:grid;gap:10px}
-    .field{display:grid;gap:5px}
-    .field label{font-size:13px;font-weight:700;color:#64748b}
+
+    .day.booked{
+      box-shadow:inset 0 0 0 1px #cdd9e6;
+    }
+
+    .day.range{
+      background:var(--range);
+      color:#0f172a;
+      border-color:#bfdbfe;
+    }
+
+    .day.edge{
+      background:var(--range-edge);
+      color:#fff;
+      border-color:#1d4ed8;
+    }
+
+    .num{
+      font-size:15px;
+      font-weight:800;
+      line-height:1;
+    }
+
+    .todayDot{
+      position:absolute;
+      top:7px;
+      right:7px;
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:#16a34a;
+      box-shadow:0 0 0 3px rgba(34,197,94,.16);
+    }
+
+    .dayDots{
+      margin-top:12px;
+      min-height:24px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:5px;
+      flex-wrap:wrap;
+    }
+
+    .carDot{
+      width:12px;
+      height:12px;
+      border-radius:999px;
+      border:2px solid rgba(255,255,255,.9);
+      box-shadow:0 0 0 1px rgba(0,0,0,.10);
+      cursor:pointer;
+    }
+
+    .moreDots{
+      font-size:11px;
+      font-weight:800;
+      color:#475569;
+      background:#f8fafc;
+      border:1px solid #dbe4ef;
+      border-radius:999px;
+      padding:1px 6px;
+      line-height:18px;
+      height:20px;
+    }
+
+    .legend{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .legendItem{
+      border:1px solid #d3dde8;
+      background:#fff;
+      border-radius:12px;
+      padding:7px 10px;
+      font-size:12px;
+      color:#475569;
+      font-weight:600;
+    }
+
+    .legendSwatch{
+      display:inline-block;
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      margin-right:6px;
+      vertical-align:-1px;
+    }
+
+    .form{
+      display:grid;
+      gap:10px;
+    }
+
+    .field{
+      display:grid;
+      gap:5px;
+    }
+
+    .field label{
+      font-size:13px;
+      font-weight:700;
+      color:#64748b;
+    }
+
     input,select,textarea{
-      width:100%;border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 13px;font-size:15px;color:var(--text);outline:none;
+      width:100%;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:12px 13px;
+      font-size:15px;
+      color:var(--text);
+      outline:none;
     }
-    input:focus,select:focus,textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.10)}
-    textarea{min-height:90px;resize:vertical}
-    .readonlyHint{font-size:12px;color:#64748b;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 12px}
-    .formActions{display:flex;gap:8px;flex-wrap:wrap}
-    .cardsTitle{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;margin-bottom:6px}
-    .cardsTitle strong{font-size:14px}
-    .list{display:grid;gap:10px;margin-top:10px}
+
+    input:focus,select:focus,textarea:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(59,130,246,.10);
+    }
+
+    textarea{
+      min-height:90px;
+      resize:vertical;
+    }
+
+    .readonlyHint{
+      font-size:12px;
+      color:#64748b;
+      background:#f8fafc;
+      border:1px dashed #cbd5e1;
+      border-radius:12px;
+      padding:10px 12px;
+    }
+
+    .formActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .cardsTitle{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+      margin-bottom:6px;
+    }
+
+    .cardsTitle strong{
+      font-size:14px;
+    }
+
+    .list{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+
     .item{
-      border:1px solid var(--line);border-radius:18px;padding:12px;background:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;box-shadow:0 6px 16px rgba(15,23,42,.03);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:12px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      box-shadow:0 6px 16px rgba(15,23,42,.03);
     }
-    .item.done{background:rgba(34,197,94,.09);border-color:rgba(34,197,94,.30)}
-    .item.current{background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.30)}
-    .itemHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-    .carTag{font-size:12px;font-weight:800;border-radius:999px;padding:5px 9px;background:#eff6ff;color:#1d4ed8}
-    .statusTag{font-size:11px;font-weight:800;border-radius:999px;padding:5px 8px;background:#f8fafc;color:#475569;border:1px solid #e2e8f0}
+
+    .item.done{
+      background:rgba(34,197,94,.09);
+      border-color:rgba(34,197,94,.30);
+    }
+
+    .item.current{
+      background:rgba(245,158,11,.10);
+      border-color:rgba(245,158,11,.30);
+    }
+
+    .itemHead{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:6px;
+    }
+
+    .carTag{
+      font-size:12px;
+      font-weight:800;
+      border-radius:999px;
+      padding:5px 9px;
+      color:#fff;
+    }
+
+    .statusTag{
+      font-size:11px;
+      font-weight:800;
+      border-radius:999px;
+      padding:5px 8px;
+      background:#f8fafc;
+      color:#475569;
+      border:1px solid #e2e8f0;
+    }
+
     .statusTag.future{background:#eff6ff;color:#1d4ed8}
     .statusTag.current{background:#fff7ed;color:#c2410c}
     .statusTag.done{background:#f0fdf4;color:#15803d}
-    .itemText{font-size:13px;color:#475569;line-height:1.45}
-    .adminActions{display:flex;gap:8px;flex-wrap:wrap}
+
+    .itemText{
+      font-size:13px;
+      color:#475569;
+      line-height:1.45;
+    }
+
+    .adminActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
     .mini{
-      padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:800;cursor:pointer;display:none;white-space:nowrap;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:#fff;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      display:none;
+      white-space:nowrap;
     }
-    .mini.edit{color:#1d4ed8;border-color:#bfdbfe;background:#eff6ff}
-    .mini.delete{color:var(--danger);border-color:var(--danger-line);background:var(--danger-bg)}
-    .empty{border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;border-radius:16px;padding:16px;text-align:center;font-size:13px}
+
+    .mini.edit{
+      color:#1d4ed8;
+      border-color:#bfdbfe;
+      background:#eff6ff;
+    }
+
+    .mini.delete{
+      color:var(--danger);
+      border-color:var(--danger-line);
+      background:var(--danger-bg);
+    }
+
+    .empty{
+      border:1px dashed #cbd5e1;
+      background:#f8fafc;
+      color:#64748b;
+      border-radius:16px;
+      padding:16px;
+      text-align:center;
+      font-size:13px;
+    }
+
     .modalWrap{
-      position:fixed;inset:0;background:rgba(15,23,42,.46);display:none;align-items:flex-end;justify-content:center;padding:12px;z-index:999;
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.46);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      padding:12px;
+      z-index:999;
     }
+
     .modalWrap.show{display:flex}
+
     .modal{
-      width:min(720px, 100%);background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(15,23,42,.28);
+      width:min(720px, 100%);
+      background:#fff;
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:0 24px 60px rgba(15,23,42,.28);
     }
-    .modalHead{padding:16px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .modalTitle{font-size:16px;font-weight:800}
-    .modalBody{padding:16px;max-height:70vh;overflow:auto}
-    .modalClose{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;cursor:pointer;font-weight:700}
-    .modalCard{border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;background:#fff}
+
+    .modalHead{
+      padding:16px;
+      border-bottom:1px solid #eef2f7;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+
+    .modalTitle{
+      font-size:16px;
+      font-weight:800;
+    }
+
+    .modalBody{
+      padding:16px;
+      max-height:70vh;
+      overflow:auto;
+    }
+
+    .modalClose{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:700;
+    }
+
+    .modalCard{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:10px;
+      background:#fff;
+    }
+
     @media (max-width: 860px){
       .grid{grid-template-columns:1fr}
       .modalWrap{align-items:flex-end}
     }
+
     @media (max-width: 480px){
       .modeBar{flex-direction:column;align-items:stretch}
       .modeBar .btn{width:100%}
@@ -159,18 +591,20 @@
           <div class="titleRow">
             <div>
               <h1>Reserva de Carros</h1>
-              <div class="sub">Sistema de agendamento compartilhado da Grilazer para Triton e Strada.</div>
+              <div class="sub">Sistema de agendamento compartilhado da Grilazer para vários veículos.</div>
             </div>
             <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
           </div>
+
           <div class="modeBar">
             <button class="btn active" id="modeReserve" type="button">RESERVA</button>
             <button class="btn" id="modeStatus" type="button">STATUS</button>
             <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
           </div>
+
           <div class="heroBadges">
             <div class="badge">Clique 1x para início e 2x para fim</div>
-            <div class="badge">* Triton • # Strada</div>
+            <div class="badge">Calendário com bolinhas por carro</div>
             <div class="badge">Atualização em tempo real</div>
           </div>
         </div>
@@ -182,7 +616,7 @@
         <div class="panelHead">
           <div>
             <div class="panelTitle">Calendário de uso</div>
-            <div class="panelSub">Reserve pelo calendário ou consulte detalhes no modo STATUS.</div>
+            <div class="panelSub">No calendário, cada carro aparece só com bolinhas coloridas. Sem pintar o fundo do dia.</div>
           </div>
           <div class="calHead">
             <button class="btn secondary" id="prevBtn" type="button">◀</button>
@@ -190,17 +624,12 @@
             <button class="btn secondary" id="nextBtn" type="button">▶</button>
           </div>
         </div>
+
         <div class="panelBody">
           <div class="calendarShell">
             <div class="cal-grid" id="dow"></div>
             <div class="cal-grid" id="cal"></div>
-            <div class="legend">
-              <div class="legendItem"><strong>*</strong> Triton</div>
-              <div class="legendItem"><strong>#</strong> Strada</div>
-              <div class="legendItem"><span class="legendSwatch" style="background:#3b82f6"></span>Futuro</div>
-              <div class="legendItem"><span class="legendSwatch" style="background:#f59e0b"></span>Em andamento</div>
-              <div class="legendItem"><span class="legendSwatch" style="background:#22c55e"></span>Concluído</div>
-            </div>
+            <div class="legend" id="legend"></div>
           </div>
         </div>
       </section>
@@ -212,36 +641,41 @@
             <div class="panelSub" id="selLabel">Selecione um período</div>
           </div>
         </div>
+
         <div class="panelBody">
           <form id="form" class="form">
             <div class="field">
               <label for="car">Carro</label>
-              <select id="car">
-                <option>Triton</option>
-                <option>Strada</option>
-              </select>
+              <select id="car"></select>
             </div>
+
             <div class="field">
               <label for="who">Quem vai usar</label>
               <input id="who" placeholder="Nome" />
             </div>
+
             <div class="field">
               <label for="destination">Destino</label>
               <input id="destination" placeholder="Ex.: Cascavel, cliente X" />
             </div>
+
             <div class="field">
               <label for="motive">Motivo</label>
               <textarea id="motive" placeholder="Ex.: entrega, visita, buscar material..."></textarea>
             </div>
+
             <div class="field">
               <label for="startDate">Data inicial</label>
               <input id="startDate" readonly />
             </div>
+
             <div class="field">
               <label for="endDate">Data final</label>
               <input id="endDate" readonly />
             </div>
+
             <div class="readonlyHint">No modo RESERVA, escolha as datas clicando no calendário. No modo STATUS, clicar no dia mostra os detalhes.</div>
+
             <div class="formActions">
               <button class="btn primary" type="submit" id="saveBtn">Salvar reserva</button>
               <button class="btn secondary" type="button" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
@@ -252,6 +686,7 @@
             <strong>Histórico / reservas</strong>
             <span class="small" id="countInfo">0 registro(s)</span>
           </div>
+
           <div class="list" id="list"></div>
         </div>
       </section>
@@ -284,6 +719,28 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+    // =========================================
+    // VEÍCULOS - EDITE AQUI SE QUISER
+    // =========================================
+    const CARROS = [
+      { id: "tgr", nome: "Triton Grilazer", sigla: "TGR", cor: "#2563eb" },
+      { id: "tga", nome: "Triton GAAM",     sigla: "TGA", cor: "#16a34a" },
+      { id: "str", nome: "Strada Grilazer", sigla: "STR", cor: "#f59e0b" },
+      { id: "yar", nome: "Yaris GAAM",      sigla: "YAR", cor: "#8b5cf6" },
+      { id: "pic", nome: "Picasso GAAM",    sigla: "PIC", cor: "#ef4444" }
+    ];
+
+    const CARROS_MAP = Object.fromEntries(CARROS.map(c => [c.id, c]));
+
+    function getCarInfo(id){
+      return CARROS_MAP[id] || {
+        id,
+        nome: id,
+        sigla: String(id).toUpperCase().slice(0,3),
+        cor: "#64748b"
+      };
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyCVQBCqrJqmd4bwqM1HiiKN1dbdy6qVOtA",
       authDomain: "agendacarrosgrilazer.firebaseapp.com",
@@ -299,6 +756,7 @@
 
     const dowEl = document.getElementById("dow");
     const calEl = document.getElementById("cal");
+    const legendEl = document.getElementById("legend");
     const monthLabel = document.getElementById("monthLabel");
     const selLabel = document.getElementById("selLabel");
     const listEl = document.getElementById("list");
@@ -352,6 +810,18 @@
         .replaceAll("'","&#039;");
     }
 
+    function populateCars(){
+      carEl.innerHTML = CARROS.map(c =>
+        `<option value="${c.id}">${c.nome} (${c.sigla})</option>`
+      ).join("");
+
+      legendEl.innerHTML = CARROS.map(c => `
+        <div class="legendItem">
+          <span class="legendSwatch" style="background:${c.cor}"></span>${c.sigla} ${c.nome}
+        </div>
+      `).join("");
+    }
+
     function rangesOverlap(aStart, aEnd, bStart, bEnd){
       return aStart <= bEnd && bStart <= aEnd;
     }
@@ -373,6 +843,15 @@
       if(status === "done") return "done";
       if(status === "current") return "current";
       return "future";
+    }
+
+    function normalizeReserva(raw){
+      const legacyMap = {
+        "Triton": "tgr",
+        "Strada": "str"
+      };
+      const carId = CARROS_MAP[raw.car] ? raw.car : (legacyMap[raw.car] || raw.car);
+      return { ...raw, car: carId };
     }
 
     function setMode(newMode){
@@ -412,7 +891,7 @@
       whoEl.value = "";
       destinationEl.value = "";
       motiveEl.value = "";
-      carEl.value = "Triton";
+      carEl.value = CARROS[0].id;
       saveBtn.textContent = "Salvar reserva";
       cancelEditBtn.style.display = "none";
       selLabel.textContent = "Selecione um período";
@@ -444,12 +923,14 @@
       } else {
         modalBody.innerHTML = dayRes.map(r => {
           const st = getStatus(r);
+          const carInfo = getCarInfo(r.car);
           return `
             <div class="modalCard">
               <div class="itemHead">
-                <span class="carTag">${escapeHtml(r.car)}</span>
+                <span class="carTag" style="background:${carInfo.cor}">${carInfo.sigla}</span>
                 <span class="statusTag ${statusClassName(st)}">${statusLabel(st)}</span>
               </div>
+              <div><strong>Veículo:</strong> ${escapeHtml(carInfo.nome)}</div>
               <div><strong>Para:</strong> ${escapeHtml(r.who || "")}</div>
               ${r.destination ? `<div class="small"><strong>Destino:</strong> ${escapeHtml(r.destination)}</div>` : ``}
               <div class="small"><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
@@ -476,28 +957,29 @@
       if(e.key === "Escape") closeModal();
     });
 
-    function isDayReservedForCar(dayKey, carName){
+    function isDayReservedForCar(dayKey, carId){
       return reservas.some(r =>
         r.id !== editingId &&
-        r.car === carName &&
+        r.car === carId &&
         dayKey >= r.start &&
         dayKey <= r.end
       );
     }
 
-    function rangeHasConflictForCar(startKey, endKey, carName){
+    function rangeHasConflictForCar(startKey, endKey, carId){
       return reservas.some(r =>
         r.id !== editingId &&
-        r.car === carName &&
+        r.car === carId &&
         rangesOverlap(r.start, r.end, startKey, endKey)
       );
     }
 
     function pick(key){
-      const carV = carEl.value;
+      const carId = carEl.value;
 
-      if((!selStart || selEnd) && isDayReservedForCar(key, carV)){
-        alert(`Dia já reservado para ${carV}. Escolha outro dia.`);
+      if((!selStart || selEnd) && isDayReservedForCar(key, carId)){
+        const carInfo = getCarInfo(carId);
+        alert(`Dia já reservado para ${carInfo.nome}. Escolha outro dia.`);
         return;
       }
 
@@ -505,8 +987,9 @@
         const startKey = key < selStart ? key : selStart;
         const endKey = key < selStart ? selStart : key;
 
-        if(rangeHasConflictForCar(startKey, endKey, carV)){
-          alert(`Conflito: ${carV} já tem reserva dentro desse período.`);
+        if(rangeHasConflictForCar(startKey, endKey, carId)){
+          const carInfo = getCarInfo(carId);
+          alert(`Conflito: ${carInfo.nome} já tem reserva dentro desse período.`);
           return;
         }
       }
@@ -569,28 +1052,39 @@
         }
 
         const dayRes = reservas.filter(r => key >= r.start && key <= r.end);
-        const hasTriton = dayRes.some(r => r.car === "Triton");
-        const hasStrada = dayRes.some(r => r.car === "Strada");
 
         if(dayRes.length){
-          const statuses = dayRes.map(getStatus);
-          if(statuses.includes("current")){
-            cell.classList.add("current");
-          } else if(statuses.every(s => s === "done")){
-            cell.classList.add("done");
-          } else {
-            cell.classList.add("future");
+          cell.classList.add("booked");
+
+          const uniqueCars = [...new Set(dayRes.map(r => r.car))];
+          const dotsWrap = document.createElement("div");
+          dotsWrap.className = "dayDots";
+
+          uniqueCars.slice(0, 3).forEach(carId => {
+            const info = getCarInfo(carId);
+            const dot = document.createElement("span");
+            dot.className = "carDot";
+            dot.style.background = info.cor;
+            dot.title = `${info.nome} (${info.sigla})`;
+            dot.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              openDayModal(key);
+            });
+            dotsWrap.appendChild(dot);
+          });
+
+          if(uniqueCars.length > 3){
+            const more = document.createElement("span");
+            more.className = "moreDots";
+            more.textContent = `+${uniqueCars.length - 3}`;
+            more.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              openDayModal(key);
+            });
+            dotsWrap.appendChild(more);
           }
 
-          const mark = document.createElement("span");
-          mark.className = "marker";
-          mark.textContent = (hasTriton ? "*" : "") + (hasStrada ? "#" : "");
-          mark.title = "Toque para ver detalhes";
-          mark.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            openDayModal(key);
-          });
-          cell.appendChild(mark);
+          cell.appendChild(dotsWrap);
         }
 
         if(selStart && selEnd && key > selStart && key < selEnd) cell.classList.add("range");
@@ -611,7 +1105,10 @@
     async function del(id){
       const it = reservas.find(x => x.id === id);
       if(!it) return;
-      if(!confirm(`Excluir reserva?\n${it.car} - ${it.who}\n${it.start} até ${it.end}`)) return;
+
+      const carInfo = getCarInfo(it.car);
+      if(!confirm(`Excluir reserva?\n${carInfo.nome} - ${it.who}\n${it.start} até ${it.end}`)) return;
+
       await deleteDoc(doc(db, "reservas", id));
     }
 
@@ -620,7 +1117,7 @@
       if(!item) return;
 
       editingId = id;
-      carEl.value = item.car || "Triton";
+      carEl.value = item.car;
       whoEl.value = item.who || "";
       destinationEl.value = item.destination || "";
       motiveEl.value = item.motive || "";
@@ -650,17 +1147,19 @@
 
       data.forEach(r => {
         const st = getStatus(r);
+        const carInfo = getCarInfo(r.car);
         const div = document.createElement("div");
         div.className = `item ${statusClassName(st)}`;
 
         div.innerHTML = `
           <div>
             <div class="itemHead">
-              <span class="carTag">${escapeHtml(r.car)}</span>
+              <span class="carTag" style="background:${carInfo.cor}">${carInfo.sigla}</span>
               <span class="statusTag ${statusClassName(st)}">${statusLabel(st)}</span>
             </div>
             <div class="itemText">
-              <strong>Para:</strong> ${escapeHtml(r.who || "")}
+              <strong>Veículo:</strong> ${escapeHtml(carInfo.nome)}
+              <br><strong>Para:</strong> ${escapeHtml(r.who || "")}
               ${r.destination ? `<br><strong>Destino:</strong> ${escapeHtml(r.destination)}` : ``}
               <br><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}
               ${r.motive ? `<br><strong>Motivo:</strong> ${escapeHtml(r.motive)}` : ``}
@@ -709,19 +1208,22 @@
 
       const destinationV = destinationEl.value.trim();
       const motiveV = motiveEl.value.trim();
-      const carV = carEl.value;
+      const carId = carEl.value;
 
       const conflict = reservas.some(r =>
         r.id !== editingId &&
-        r.car === carV &&
+        r.car === carId &&
         rangesOverlap(r.start, r.end, selStart, selEnd)
       );
 
-      if(conflict) return alert(`Conflito: ${carV} já está reservado nesse período.`);
+      if(conflict){
+        const carInfo = getCarInfo(carId);
+        return alert(`Conflito: ${carInfo.nome} já está reservado nesse período.`);
+      }
 
       if(editingId){
         await updateDoc(doc(db, "reservas", editingId), {
-          car: carV,
+          car: carId,
           who: whoV,
           destination: destinationV,
           motive: motiveV,
@@ -730,7 +1232,7 @@
         });
       } else {
         await addDoc(reservasRef, {
-          car: carV,
+          car: carId,
           who: whoV,
           destination: destinationV,
           motive: motiveV,
@@ -744,7 +1246,7 @@
     });
 
     onSnapshot(reservasRef, (snap) => {
-      reservas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      reservas = snap.docs.map(d => normalizeReserva({ id: d.id, ...d.data() }));
       renderCalendar();
       renderList();
     }, (err) => {
@@ -752,6 +1254,7 @@
       alert("Erro ao conectar no Firestore. Confira as regras (Rules) e o Hosting.");
     });
 
+    populateCars();
     renderDOW();
     setMode("reserve");
     renderCalendar();
