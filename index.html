@@ -7,209 +7,248 @@
 
   <style>
     :root{
-      --bg:#eef4fb;
-      --bg2:#f7fafc;
+      --bg:#f3f4f6;
+      --sidebar:#111827;
+      --sidebar-2:#0f172a;
       --card:#ffffff;
-      --text:#172033;
-      --muted:#6b7280;
-      --line:#dbe4ef;
-      --shadow:0 16px 40px rgba(15, 23, 42, .08);
-      --range:#dbeafe;
-      --range-edge:#1d4ed8;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e5e7eb;
+      --primary:#ff7a18;
+      --primary-soft:#fff1e8;
+      --shadow:0 8px 24px rgba(15,23,42,.08);
+      --radius:18px;
       --danger:#dc2626;
       --danger-bg:#fff1f2;
       --danger-line:#fecdd3;
+      --range:#dbeafe;
+      --range-edge:#1d4ed8;
     }
 
     *{box-sizing:border-box}
     html,body{height:100%}
-
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
       color:var(--text);
-      background:
-        radial-gradient(circle at top left, #dbeafe 0%, transparent 35%),
-        radial-gradient(circle at top right, #dcfce7 0%, transparent 30%),
-        linear-gradient(180deg, var(--bg), var(--bg2));
     }
 
-    .wrap{
-      max-width:1180px;
-      margin:0 auto;
-      padding:18px 14px 28px;
+    .app-shell{
+      display:grid;
+      grid-template-columns:260px 1fr;
+      min-height:100vh;
     }
 
-    .hero{
-      background:linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      padding:18px;
-      margin-bottom:16px;
+    .sidebar{
+      background:linear-gradient(180deg,var(--sidebar),var(--sidebar-2));
+      color:#fff;
+      padding:20px 18px;
+      border-right:1px solid rgba(255,255,255,.06);
+      position:sticky;
+      top:0;
+      height:100vh;
     }
 
-    .heroTop{
+    .brandWrap{
       display:flex;
-      justify-content:space-between;
+      gap:12px;
       align-items:flex-start;
-      gap:16px;
-      flex-wrap:wrap;
+      margin-bottom:26px;
     }
 
-    .titleRow{
+    .brandIcon{
+      width:40px;
+      height:40px;
+      border-radius:12px;
       display:flex;
-      align-items:flex-start;
-      gap:8px;
-    }
-
-    h1{
-      margin:0;
-      font-size:22px;
-      letter-spacing:-.02em;
-    }
-
-    .sub{
-      margin-top:6px;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.45;
-    }
-
-    .adminBtn{
-      opacity:.14;
-      font-size:11px;
-      border:none;
-      background:none;
-      color:#475569;
-      cursor:pointer;
-      padding:4px;
-      line-height:1;
-      user-select:none;
-    }
-
-    .heroBadges{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:14px;
-    }
-
-    .badge{
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:12px;
-      color:#334155;
-      font-weight:600;
-    }
-
-    .modeBar{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
       align-items:center;
-      margin-top:12px;
+      justify-content:center;
+      background:var(--primary);
+      color:#fff;
+      font-size:20px;
+      font-weight:900;
+      box-shadow:0 10px 24px rgba(255,122,24,.25);
+      flex:0 0 auto;
     }
 
-    .modeHint{
+    .brand{
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .brand-sub{
       font-size:13px;
-      color:var(--muted);
+      color:rgba(255,255,255,.72);
     }
 
-    .btn{
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--text);
-      padding:10px 14px;
+    .nav{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .nav-btn{
+      border:none;
+      background:transparent;
+      color:rgba(255,255,255,.78);
+      text-align:left;
+      padding:14px 16px;
       border-radius:14px;
-      font-size:14px;
+      font-size:15px;
       font-weight:700;
       cursor:pointer;
       transition:.15s ease;
-      user-select:none;
     }
 
-    .btn:hover{transform:translateY(-1px)}
-
-    .btn.active{
-      border-color:#bfdbfe;
-      background:#eff6ff;
-      color:#1d4ed8;
-    }
-
-    .btn.primary{
-      background:linear-gradient(135deg, #3b82f6, #2563eb);
+    .nav-btn:hover{
+      background:rgba(255,255,255,.05);
       color:#fff;
-      border-color:#2563eb;
-      box-shadow:0 10px 20px rgba(37,99,235,.18);
     }
 
-    .btn.secondary{
-      background:#f8fafc;
+    .nav-btn.active{
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(255,122,24,.28);
     }
 
-    .panel{
-      background:rgba(255,255,255,.86);
-      backdrop-filter:blur(8px);
-      border:1px solid var(--line);
-      border-radius:22px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
+    .sidebarFooter{
+      position:absolute;
+      left:18px;
+      right:18px;
+      bottom:18px;
+      font-size:12px;
+      color:rgba(255,255,255,.45);
+      border-top:1px solid rgba(255,255,255,.08);
+      padding-top:14px;
     }
 
-    .panelHead{
-      padding:16px 16px 12px;
-      border-bottom:1px solid #edf2f7;
+    .main{
+      padding:26px;
+    }
+
+    .topbar{
       display:flex;
       justify-content:space-between;
-      align-items:center;
-      gap:10px;
+      align-items:flex-start;
+      gap:12px;
       flex-wrap:wrap;
+      margin-bottom:18px;
     }
 
-    .panelTitle{
-      font-size:16px;
+    .page-title{
+      font-size:22px;
       font-weight:800;
+      margin:0;
     }
 
-    .panelSub{
-      font-size:12px;
+    .page-sub{
+      margin-top:6px;
       color:var(--muted);
-      margin-top:4px;
+      font-size:14px;
     }
 
-    .panelBody{
-      padding:14px;
+    .adminBtn{
+      opacity:.2;
+      border:none;
+      background:transparent;
+      color:#334155;
+      cursor:pointer;
+      font-size:14px;
+      padding:8px;
+      line-height:1;
     }
 
-    .grid{
+    .kpi-grid{
       display:grid;
-      grid-template-columns:1.2fr .9fr;
+      grid-template-columns:repeat(4,1fr);
       gap:16px;
+      margin-bottom:18px;
+    }
+
+    .kpi-card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      min-height:114px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .kpi-label{
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:10px;
+    }
+
+    .kpi-value{
+      font-size:34px;
+      font-weight:800;
+      line-height:1;
+    }
+
+    .kpi-icon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-weight:800;
+      flex:0 0 auto;
+    }
+
+    .content-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
       align-items:start;
     }
 
-    .calendarShell{
-      background:#dde7f2;
-      border:1px solid #c9d8e8;
-      border-radius:18px;
-      padding:12px;
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
     }
 
-    .calHead{
+    .card-title{
+      font-size:18px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .card-sub{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:16px;
+    }
+
+    .calendar-box{
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .cal-head{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
+      margin-bottom:10px;
     }
 
     .monthLabel{
-      font-size:16px;
       font-weight:800;
+      font-size:18px;
       text-transform:capitalize;
-      letter-spacing:-.01em;
     }
 
     .cal-grid{
@@ -221,53 +260,28 @@
     .dow{
       text-align:center;
       font-size:11px;
-      font-weight:700;
+      font-weight:800;
       color:#64748b;
       padding:4px 0;
     }
 
     .day{
-      min-height:82px;
-      border-radius:16px;
       background:#fff;
-      border:1px solid #d8e1ea;
+      border-radius:16px;
+      min-height:78px;
+      border:1px solid #dde5ee;
+      padding:8px 6px;
       text-align:center;
-      padding:8px 6px 6px;
       cursor:pointer;
       position:relative;
-      font-weight:700;
-      user-select:none;
       transition:.15s ease;
     }
 
-    .day:hover{
-      background:#f8fbff;
-      transform:translateY(-1px);
-    }
-
-    .day:active{transform:scale(.99)}
-
-    .day.muted{
-      opacity:.33;
-      cursor:default;
-      background:#eff4f8;
-    }
-
-    .day.booked{
-      box-shadow:inset 0 0 0 1px #cdd9e6;
-    }
-
-    .day.range{
-      background:var(--range);
-      color:#0f172a;
-      border-color:#bfdbfe;
-    }
-
-    .day.edge{
-      background:var(--range-edge);
-      color:#fff;
-      border-color:#1d4ed8;
-    }
+    .day:hover{background:#f8fbff}
+    .day.muted{opacity:.35; cursor:default; background:#f5f7fa}
+    .day.booked{box-shadow:inset 0 0 0 1px #d6dee7}
+    .day.range{background:var(--range); border-color:#bfdbfe}
+    .day.edge{background:var(--range-edge); color:#fff; border-color:#1d4ed8}
 
     .num{
       font-size:15px;
@@ -315,23 +329,26 @@
       padding:1px 6px;
       line-height:18px;
       height:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
     .legend{
-      margin-top:12px;
       display:flex;
       gap:8px;
       flex-wrap:wrap;
+      margin-top:12px;
     }
 
     .legendItem{
-      border:1px solid #d3dde8;
+      border:1px solid #e5e7eb;
       background:#fff;
       border-radius:12px;
       padding:7px 10px;
       font-size:12px;
+      font-weight:700;
       color:#475569;
-      font-weight:600;
     }
 
     .legendSwatch{
@@ -343,62 +360,66 @@
       vertical-align:-1px;
     }
 
-    .form{
-      display:grid;
-      gap:10px;
-    }
-
-    .field{
-      display:grid;
-      gap:5px;
-    }
-
-    .field label{
+    .field{margin-bottom:12px}
+    label{
+      display:block;
+      margin-bottom:6px;
       font-size:13px;
       font-weight:700;
-      color:#64748b;
+      color:#475569;
     }
 
     input,select,textarea{
       width:100%;
+      padding:12px 14px;
+      border-radius:12px;
       border:1px solid var(--line);
       background:#fff;
-      border-radius:14px;
-      padding:12px 13px;
-      font-size:15px;
+      font-size:14px;
       color:var(--text);
-      outline:none;
     }
 
     input:focus,select:focus,textarea:focus{
-      border-color:#93c5fd;
-      box-shadow:0 0 0 4px rgba(59,130,246,.10);
+      outline:none;
+      border-color:#fdba74;
+      box-shadow:0 0 0 4px rgba(255,122,24,.12);
     }
 
-    textarea{
-      min-height:90px;
-      resize:vertical;
-    }
+    textarea{min-height:92px; resize:vertical}
 
-    .readonlyHint{
+    .hint{
       font-size:12px;
       color:#64748b;
       background:#f8fafc;
       border:1px dashed #cbd5e1;
       border-radius:12px;
       padding:10px 12px;
+      margin-bottom:12px;
     }
 
-    .formActions{
+    .actions{
       display:flex;
       gap:8px;
       flex-wrap:wrap;
     }
 
+    .modeBar{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:14px;
+    }
+
+    .modeHint{
+      font-size:13px;
+      color:var(--muted);
+    }
+
     .tabs{
       display:flex;
       gap:8px;
-      margin-top:14px;
+      margin-top:18px;
       margin-bottom:8px;
       flex-wrap:wrap;
     }
@@ -415,58 +436,62 @@
     }
 
     .tabBtn.active{
-      background:#eff6ff;
-      color:#1d4ed8;
-      border-color:#bfdbfe;
+      background:var(--primary-soft);
+      color:#c2410c;
+      border-color:#fed7aa;
     }
 
-    .cardsTitle{
+    .sectionHead{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
       flex-wrap:wrap;
-      margin-top:4px;
-      margin-bottom:6px;
+      margin-top:8px;
+      margin-bottom:8px;
     }
 
-    .cardsTitle strong{
-      font-size:14px;
+    .sectionHead strong{
+      font-size:15px;
     }
 
     .list{
-      display:grid;
+      display:flex;
+      flex-direction:column;
       gap:10px;
-      margin-top:10px;
     }
 
     .item{
       border:1px solid var(--line);
-      border-radius:18px;
-      padding:12px;
       background:#fff;
+      border-radius:14px;
+      padding:12px;
       display:flex;
       justify-content:space-between;
-      align-items:flex-start;
       gap:12px;
-      box-shadow:0 6px 16px rgba(15,23,42,.03);
-    }
-
-    .item.done{
-      background:rgba(34,197,94,.09);
-      border-color:rgba(34,197,94,.30);
+      align-items:flex-start;
     }
 
     .item.current{
-      background:rgba(245,158,11,.10);
-      border-color:rgba(245,158,11,.30);
+      border-left:5px solid #f59e0b;
+      background:#fffaf0;
+    }
+
+    .item.done{
+      border-left:5px solid #22c55e;
+      background:#f0fdf4;
+    }
+
+    .item.future{
+      border-left:5px solid #3b82f6;
+      background:#f8fbff;
     }
 
     .itemHead{
       display:flex;
-      align-items:center;
       gap:8px;
       flex-wrap:wrap;
+      align-items:center;
       margin-bottom:6px;
     }
 
@@ -483,14 +508,14 @@
       font-weight:800;
       border-radius:999px;
       padding:5px 8px;
-      background:#f8fafc;
-      color:#475569;
       border:1px solid #e2e8f0;
+      background:#fff;
+      color:#475569;
     }
 
-    .statusTag.future{background:#eff6ff;color:#1d4ed8}
-    .statusTag.current{background:#fff7ed;color:#c2410c}
-    .statusTag.done{background:#f0fdf4;color:#15803d}
+    .statusTag.future{background:#eff6ff; color:#1d4ed8}
+    .statusTag.current{background:#fff7ed; color:#c2410c}
+    .statusTag.done{background:#f0fdf4; color:#15803d}
 
     .itemText{
       font-size:13px;
@@ -596,81 +621,107 @@
       background:#fff;
     }
 
-    @media (max-width: 860px){
-      .grid{grid-template-columns:1fr}
-      .modalWrap{align-items:flex-end}
+    @media (max-width: 980px){
+      .app-shell{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .kpi-grid{grid-template-columns:repeat(2,1fr)}
+      .content-grid{grid-template-columns:1fr}
     }
 
-    @media (max-width: 480px){
-      .modeBar{flex-direction:column;align-items:stretch}
-      .modeBar .btn{width:100%}
-      .modeHint{width:100%}
+    @media (max-width: 560px){
+      .main{padding:16px}
+      .kpi-grid{grid-template-columns:1fr}
       .tabs{flex-direction:column}
       .tabBtn{width:100%}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="hero">
-      <div class="heroTop">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brandWrap">
+        <div class="brandIcon">🚗</div>
         <div>
-          <div class="titleRow">
-            <div>
-              <h1>Reserva de Carros</h1>
-              <div class="sub">Sistema de agendamento compartilhado da Grilazer para vários veículos.</div>
-            </div>
-            <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
-          </div>
-
-          <div class="modeBar">
-            <button class="btn active" id="modeReserve" type="button">RESERVA</button>
-            <button class="btn" id="modeStatus" type="button">STATUS</button>
-            <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
-          </div>
-
-          <div class="heroBadges">
-            <div class="badge">Clique 1x para início e 2x para fim</div>
-            <div class="badge">Calendário com bolinhas por carro</div>
-            <div class="badge">Atualização em tempo real</div>
-          </div>
+          <div class="brand">Reserva de Carros</div>
+          <div class="brand-sub">Controle de veículos</div>
         </div>
       </div>
-    </div>
 
-    <div class="grid">
-      <section class="panel">
-        <div class="panelHead">
+      <div class="nav">
+        <button class="nav-btn active" type="button">Painel</button>
+        <button class="nav-btn" type="button">Reservas</button>
+        <button class="nav-btn" type="button">Histórico</button>
+      </div>
+
+      <div class="sidebarFooter">Grilazer · sistema interno</div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1 class="page-title">Painel de Controle</h1>
+          <div class="page-sub">Visão geral dos agendamentos dos veículos</div>
+        </div>
+        <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
           <div>
-            <div class="panelTitle">Calendário de uso</div>
-            <div class="panelSub">No calendário, cada carro aparece só com bolinhas coloridas. Sem pintar o fundo do dia.</div>
+            <div class="kpi-label">Veículos</div>
+            <div class="kpi-value" id="kpiVeiculos">0</div>
           </div>
-          <div class="calHead">
-            <button class="btn secondary" id="prevBtn" type="button">◀</button>
-            <div class="monthLabel" id="monthLabel"></div>
-            <button class="btn secondary" id="nextBtn" type="button">▶</button>
-          </div>
+          <div class="kpi-icon" style="background:#eff6ff;color:#2563eb">🚘</div>
         </div>
 
-        <div class="panelBody">
-          <div class="calendarShell">
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-label">Em uso hoje</div>
+            <div class="kpi-value" id="kpiEmUso">0</div>
+          </div>
+          <div class="kpi-icon" style="background:#fff7ed;color:#ea580c">⏱</div>
+        </div>
+
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-label">Próximas reservas</div>
+            <div class="kpi-value" id="kpiFuturas">0</div>
+          </div>
+          <div class="kpi-icon" style="background:#eff6ff;color:#2563eb">📅</div>
+        </div>
+
+        <div class="kpi-card">
+          <div>
+            <div class="kpi-label">Histórico concluído</div>
+            <div class="kpi-value" id="kpiConcluidas">0</div>
+          </div>
+          <div class="kpi-icon" style="background:#f0fdf4;color:#15803d">✔</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <section class="card">
+          <div class="card-title">Calendário</div>
+          <div class="card-sub">Visual de reservas por veículo</div>
+
+          <div class="calendar-box">
+            <div class="cal-head">
+              <button class="btn secondary" id="prevBtn" type="button">◀</button>
+              <div class="monthLabel" id="monthLabel"></div>
+              <button class="btn secondary" id="nextBtn" type="button">▶</button>
+            </div>
+
             <div class="cal-grid" id="dow"></div>
             <div class="cal-grid" id="cal"></div>
             <div class="legend" id="legend"></div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="panel">
-        <div class="panelHead">
-          <div>
-            <div class="panelTitle">Cadastro da reserva</div>
-            <div class="panelSub" id="selLabel">Selecione um período</div>
-          </div>
-        </div>
+        <section class="card">
+          <div class="card-title">Nova Reserva</div>
+          <div class="card-sub" id="selLabel">Selecione um período</div>
 
-        <div class="panelBody">
-          <form id="form" class="form">
+          <form id="form">
             <div class="field">
               <label for="car">Carro</label>
               <select id="car"></select>
@@ -701,28 +752,34 @@
               <input id="endDate" readonly />
             </div>
 
-            <div class="readonlyHint">No modo RESERVA, escolha as datas clicando no calendário. No modo STATUS, clicar no dia mostra os detalhes.</div>
+            <div class="hint">No modo RESERVA, escolha as datas clicando no calendário. No modo STATUS, clicar no dia mostra os detalhes.</div>
 
-            <div class="formActions">
+            <div class="actions">
               <button class="btn primary" type="submit" id="saveBtn">Salvar reserva</button>
               <button class="btn secondary" type="button" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
             </div>
           </form>
+
+          <div class="modeBar">
+            <button class="btn active" id="modeReserve" type="button">RESERVA</button>
+            <button class="btn" id="modeStatus" type="button">STATUS</button>
+            <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
+          </div>
 
           <div class="tabs">
             <button class="tabBtn active" id="tabAtivas" type="button">Ativas / Futuras</button>
             <button class="tabBtn" id="tabHistorico" type="button">Histórico</button>
           </div>
 
-          <div class="cardsTitle">
+          <div class="sectionHead">
             <strong id="cardsTitleLabel">Reservas ativas e futuras</strong>
-            <span class="small" id="countInfo">0 registro(s)</span>
+            <span class="page-sub" id="countInfo">0 registro(s)</span>
           </div>
 
           <div class="list" id="list"></div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </main>
   </div>
 
   <div class="modalWrap" id="modalWrap" aria-hidden="true">
@@ -730,7 +787,7 @@
       <div class="modalHead">
         <div>
           <div class="modalTitle" id="modalTitle">Detalhes</div>
-          <div class="small" id="modalSub"></div>
+          <div class="page-sub" id="modalSub"></div>
         </div>
         <button class="modalClose" id="modalClose" type="button">Fechar</button>
       </div>
@@ -751,7 +808,6 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // VEÍCULOS
     const CARROS = [
       { id: "tgr", nome: "Triton Grilazer", sigla: "TGR", cor: "#2563eb" },
       { id: "tga", nome: "Triton GAAM",     sigla: "TGA", cor: "#16a34a" },
@@ -812,6 +868,11 @@
     const tabAtivasBtn = document.getElementById("tabAtivas");
     const tabHistoricoBtn = document.getElementById("tabHistorico");
 
+    const kpiVeiculos = document.getElementById("kpiVeiculos");
+    const kpiEmUso = document.getElementById("kpiEmUso");
+    const kpiFuturas = document.getElementById("kpiFuturas");
+    const kpiConcluidas = document.getElementById("kpiConcluidas");
+
     const modalWrap = document.getElementById("modalWrap");
     const modalClose = document.getElementById("modalClose");
     const modalTitle = document.getElementById("modalTitle");
@@ -855,6 +916,8 @@
           <span class="legendSwatch" style="background:${c.cor}"></span>${c.sigla} ${c.nome}
         </div>
       `).join("");
+
+      kpiVeiculos.textContent = CARROS.length;
     }
 
     function rangesOverlap(aStart, aEnd, bStart, bEnd){
@@ -878,6 +941,16 @@
       if(status === "done") return "done";
       if(status === "current") return "current";
       return "future";
+    }
+
+    function updateKpis(){
+      const current = reservas.filter(r => getStatus(r) === "current").length;
+      const future = reservas.filter(r => getStatus(r) === "future").length;
+      const done = reservas.filter(r => getStatus(r) === "done").length;
+
+      kpiEmUso.textContent = current;
+      kpiFuturas.textContent = future;
+      kpiConcluidas.textContent = done;
     }
 
     function normalizeReserva(raw){
@@ -979,9 +1052,9 @@
               </div>
               <div><strong>Veículo:</strong> ${escapeHtml(carInfo.nome)}</div>
               <div><strong>Para:</strong> ${escapeHtml(r.who || "")}</div>
-              ${r.destination ? `<div class="small"><strong>Destino:</strong> ${escapeHtml(r.destination)}</div>` : ``}
-              <div class="small"><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
-              ${r.motive ? `<div class="small"><strong>Motivo:</strong> ${escapeHtml(r.motive)}</div>` : ``}
+              ${r.destination ? `<div class="page-sub"><strong>Destino:</strong> ${escapeHtml(r.destination)}</div>` : ``}
+              <div class="page-sub"><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}</div>
+              ${r.motive ? `<div class="page-sub"><strong>Motivo:</strong> ${escapeHtml(r.motive)}</div>` : ``}
             </div>
           `;
         }).join("");
@@ -1154,7 +1227,7 @@
       if(!it) return;
 
       const carInfo = getCarInfo(it.car);
-      if(!confirm(`Excluir reserva?\\n${carInfo.nome} - ${it.who}\\n${it.start} até ${it.end}`)) return;
+      if(!confirm(`Excluir reserva?\n${carInfo.nome} - ${it.who}\n${it.start} até ${it.end}`)) return;
 
       await deleteDoc(doc(db, "reservas", id));
     }
@@ -1301,6 +1374,7 @@
 
     onSnapshot(reservasRef, (snap) => {
       reservas = snap.docs.map(d => normalizeReserva({ id: d.id, ...d.data() }));
+      updateKpis();
       renderCalendar();
       renderList();
     }, (err) => {
