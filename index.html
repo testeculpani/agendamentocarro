@@ -395,13 +395,38 @@
       flex-wrap:wrap;
     }
 
+    .tabs{
+      display:flex;
+      gap:8px;
+      margin-top:14px;
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
+
+    .tabBtn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:#334155;
+      padding:8px 12px;
+      border-radius:12px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .tabBtn.active{
+      background:#eff6ff;
+      color:#1d4ed8;
+      border-color:#bfdbfe;
+    }
+
     .cardsTitle{
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
       flex-wrap:wrap;
-      margin-top:14px;
+      margin-top:4px;
       margin-bottom:6px;
     }
 
@@ -580,6 +605,8 @@
       .modeBar{flex-direction:column;align-items:stretch}
       .modeBar .btn{width:100%}
       .modeHint{width:100%}
+      .tabs{flex-direction:column}
+      .tabBtn{width:100%}
     }
   </style>
 </head>
@@ -682,8 +709,13 @@
             </div>
           </form>
 
+          <div class="tabs">
+            <button class="tabBtn active" id="tabAtivas" type="button">Ativas / Futuras</button>
+            <button class="tabBtn" id="tabHistorico" type="button">Histórico</button>
+          </div>
+
           <div class="cardsTitle">
-            <strong>Histórico / reservas</strong>
+            <strong id="cardsTitleLabel">Reservas ativas e futuras</strong>
             <span class="small" id="countInfo">0 registro(s)</span>
           </div>
 
@@ -719,9 +751,7 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // =========================================
-    // VEÍCULOS - EDITE AQUI SE QUISER
-    // =========================================
+    // VEÍCULOS
     const CARROS = [
       { id: "tgr", nome: "Triton Grilazer", sigla: "TGR", cor: "#2563eb" },
       { id: "tga", nome: "Triton GAAM",     sigla: "TGA", cor: "#16a34a" },
@@ -761,6 +791,7 @@
     const selLabel = document.getElementById("selLabel");
     const listEl = document.getElementById("list");
     const countInfo = document.getElementById("countInfo");
+    const cardsTitleLabel = document.getElementById("cardsTitleLabel");
 
     const whoEl = document.getElementById("who");
     const carEl = document.getElementById("car");
@@ -778,6 +809,9 @@
     const modeStatusBtn = document.getElementById("modeStatus");
     const modeHint = document.getElementById("modeHint");
 
+    const tabAtivasBtn = document.getElementById("tabAtivas");
+    const tabHistoricoBtn = document.getElementById("tabHistorico");
+
     const modalWrap = document.getElementById("modalWrap");
     const modalClose = document.getElementById("modalClose");
     const modalTitle = document.getElementById("modalTitle");
@@ -787,6 +821,7 @@
     let mode = "reserve";
     let adminEnabled = false;
     let editingId = null;
+    let listTab = "ativas";
     let view = new Date();
     view = new Date(view.getFullYear(), view.getMonth(), 1);
     let selStart = null;
@@ -863,8 +898,20 @@
         : "Modo: STATUS (mostra detalhes do dia)";
     }
 
+    function setListTab(tab){
+      listTab = tab;
+      tabAtivasBtn.classList.toggle("active", tab === "ativas");
+      tabHistoricoBtn.classList.toggle("active", tab === "historico");
+      cardsTitleLabel.textContent = tab === "ativas"
+        ? "Reservas ativas e futuras"
+        : "Histórico de reservas concluídas";
+      renderList();
+    }
+
     modeReserveBtn.addEventListener("click", () => setMode("reserve"));
     modeStatusBtn.addEventListener("click", () => setMode("status"));
+    tabAtivasBtn.addEventListener("click", () => setListTab("ativas"));
+    tabHistoricoBtn.addEventListener("click", () => setListTab("historico"));
 
     adminBtn.addEventListener("click", () => {
       const senha = prompt("Senha admin:");
@@ -1107,7 +1154,7 @@
       if(!it) return;
 
       const carInfo = getCarInfo(it.car);
-      if(!confirm(`Excluir reserva?\n${carInfo.nome} - ${it.who}\n${it.start} até ${it.end}`)) return;
+      if(!confirm(`Excluir reserva?\\n${carInfo.nome} - ${it.who}\\n${it.start} até ${it.end}`)) return;
 
       await deleteDoc(doc(db, "reservas", id));
     }
@@ -1137,11 +1184,18 @@
 
     function renderList(){
       listEl.innerHTML = "";
-      const data = reservas.slice().sort((a,b) => a.start.localeCompare(b.start));
+
+      const all = reservas.slice().sort((a,b) => a.start.localeCompare(b.start));
+      const data = listTab === "ativas"
+        ? all.filter(r => getStatus(r) !== "done")
+        : all.filter(r => getStatus(r) === "done");
+
       countInfo.textContent = `${data.length} registro(s)`;
 
       if(!data.length){
-        listEl.innerHTML = '<div class="empty">Nenhuma reserva ainda.</div>';
+        listEl.innerHTML = listTab === "ativas"
+          ? '<div class="empty">Nenhuma reserva ativa ou futura.</div>'
+          : '<div class="empty">Nenhuma reserva concluída no histórico.</div>';
         return;
       }
 
@@ -1257,6 +1311,7 @@
     populateCars();
     renderDOW();
     setMode("reserve");
+    setListTab("ativas");
     renderCalendar();
     renderList();
   </script>
