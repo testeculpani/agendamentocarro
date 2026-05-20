@@ -160,55 +160,6 @@
       line-height:1;
     }
 
-    .kpi-grid{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .kpi-card{
-      background:linear-gradient(180deg,#ffffff 0%, #fcfcfd 100%);
-      border:1px solid #e6ebf2;
-      border-radius:16px;
-      box-shadow:0 8px 18px rgba(15,23,42,.05);
-      padding:14px;
-      min-height:88px;
-      display:flex;
-      justify-content:space-between;
-      gap:8px;
-      transition:.18s ease;
-    }
-
-    .kpi-card:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 20px rgba(15,23,42,.08);
-    }
-
-    .kpi-label{
-      font-size:13px;
-      color:var(--muted);
-      margin-bottom:6px;
-    }
-
-    .kpi-value{
-      font-size:26px;
-      font-weight:800;
-      line-height:1;
-    }
-
-    .kpi-icon{
-      width:34px;
-      height:34px;
-      border-radius:10px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:14px;
-      font-weight:800;
-      flex:0 0 auto;
-    }
-
     .content-grid{
       display:grid;
       grid-template-columns:1.15fr .85fr;
@@ -249,6 +200,38 @@
       align-items:center;
       gap:10px;
       margin-bottom:10px;
+    }
+
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .btn.active{
+      border-color:#bfdbfe;
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg, #3b82f6, #2563eb);
+      color:#fff;
+      border-color:#2563eb;
+      box-shadow:0 10px 20px rgba(37,99,235,.18);
+    }
+
+    .btn.secondary{
+      background:#f8fafc;
     }
 
     .monthLabel{
@@ -416,6 +399,11 @@
       align-items:center;
       margin-top:8px;
       margin-bottom:14px;
+    }
+
+    .modeHint{
+      font-size:13px;
+      color:var(--muted);
     }
 
     .tabs{
@@ -633,13 +621,11 @@
     @media (max-width: 980px){
       .app-shell{grid-template-columns:1fr}
       .sidebar{display:none}
-      .kpi-grid{grid-template-columns:repeat(2,1fr)}
       .content-grid{grid-template-columns:1fr}
     }
 
     @media (max-width: 560px){
       .main{padding:16px}
-      .kpi-grid{grid-template-columns:1fr}
       .tabs{flex-direction:column}
       .tabBtn{width:100%}
     }
@@ -672,40 +658,6 @@
           <div class="page-sub">Visão geral dos agendamentos dos veículos</div>
         </div>
         <button id="adminBtn" class="adminBtn" type="button" title="Admin">⚙</button>
-      </div>
-
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div>
-            <div class="kpi-label">Veículos</div>
-            <div class="kpi-value" id="kpiVeiculos">0</div>
-          </div>
-          <div class="kpi-icon" style="background:#eff6ff;color:#2563eb">🚘</div>
-        </div>
-
-        <div class="kpi-card">
-          <div>
-            <div class="kpi-label">Em uso hoje</div>
-            <div class="kpi-value" id="kpiEmUso">0</div>
-          </div>
-          <div class="kpi-icon" style="background:#fff7ed;color:#ea580c">⏱</div>
-        </div>
-
-        <div class="kpi-card">
-          <div>
-            <div class="kpi-label">Próximas reservas</div>
-            <div class="kpi-value" id="kpiFuturas">0</div>
-          </div>
-          <div class="kpi-icon" style="background:#eff6ff;color:#2563eb">📅</div>
-        </div>
-
-        <div class="kpi-card">
-          <div>
-            <div class="kpi-label">Histórico concluído</div>
-            <div class="kpi-value" id="kpiConcluidas">0</div>
-          </div>
-          <div class="kpi-icon" style="background:#f0fdf4;color:#15803d">✔</div>
-        </div>
       </div>
 
       <div class="content-grid">
@@ -883,11 +835,6 @@
     const secReservas = document.getElementById("secReservas");
     const secHistoricoTabs = document.getElementById("secHistoricoTabs");
 
-    const kpiVeiculos = document.getElementById("kpiVeiculos");
-    const kpiEmUso = document.getElementById("kpiEmUso");
-    const kpiFuturas = document.getElementById("kpiFuturas");
-    const kpiConcluidas = document.getElementById("kpiConcluidas");
-
     const modalWrap = document.getElementById("modalWrap");
     const modalClose = document.getElementById("modalClose");
     const modalTitle = document.getElementById("modalTitle");
@@ -931,8 +878,6 @@
           <span class="legendSwatch" style="background:${c.cor}"></span>${c.sigla} ${c.nome}
         </div>
       `).join("");
-
-      kpiVeiculos.textContent = CARROS.length;
     }
 
     function rangesOverlap(aStart, aEnd, bStart, bEnd){
@@ -956,16 +901,6 @@
       if(status === "done") return "done";
       if(status === "current") return "current";
       return "future";
-    }
-
-    function updateKpis(){
-      const current = reservas.filter(r => getStatus(r) === "current").length;
-      const future = reservas.filter(r => getStatus(r) === "future").length;
-      const done = reservas.filter(r => getStatus(r) === "done").length;
-
-      kpiEmUso.textContent = current;
-      kpiFuturas.textContent = future;
-      kpiConcluidas.textContent = done;
     }
 
     function normalizeReserva(raw){
@@ -1413,7 +1348,6 @@
 
     onSnapshot(reservasRef, (snap) => {
       reservas = snap.docs.map(d => normalizeReserva({ id: d.id, ...d.data() }));
-      updateKpis();
       renderCalendar();
       renderList();
     }, (err) => {
