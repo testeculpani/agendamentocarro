@@ -27,6 +27,7 @@
 
     *{box-sizing:border-box}
     html,body{height:100%}
+
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -163,36 +164,48 @@
     .kpi-grid{
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:16px;
-      margin-bottom:18px;
+      gap:12px;
+      margin-bottom:14px;
     }
 
     .kpi-card{
       background:linear-gradient(180deg,#ffffff 0%, #fcfcfd 100%);
       border:1px solid #e6ebf2;
-      border-radius:var(--radius);
-      box-shadow:0 10px 26px rgba(15,23,42,.06);
-      padding:18px;
-      min-height:114px;
+      border-radius:16px;
+      box-shadow:0 8px 18px rgba(15,23,42,.05);
+      padding:14px;
+      min-height:88px;
       display:flex;
       justify-content:space-between;
-      gap:10px;
+      gap:8px;
       transition:.18s ease;
     }
 
     .kpi-card:hover{
-      transform:translateY(-2px);
-      box-shadow:0 14px 28px rgba(15,23,42,.09);
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(15,23,42,.08);
+    }
+
+    .kpi-label{
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+
+    .kpi-value{
+      font-size:26px;
+      font-weight:800;
+      line-height:1;
     }
 
     .kpi-icon{
-      width:42px;
-      height:42px;
-      border-radius:14px;
+      width:34px;
+      height:34px;
+      border-radius:10px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:18px;
+      font-size:14px;
       font-weight:800;
       flex:0 0 auto;
     }
@@ -355,6 +368,7 @@
     }
 
     .field{margin-bottom:12px}
+
     label{
       display:block;
       margin-bottom:6px;
@@ -397,12 +411,45 @@
       flex-wrap:wrap;
     }
 
+    .btn{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:14px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+
+    .btn.active{
+      border-color:#fed7aa;
+      background:var(--primary-soft);
+      color:#c2410c;
+    }
+
+    .btn.primary{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+      box-shadow:0 10px 20px rgba(255,122,24,.20);
+    }
+
+    .btn.secondary{
+      background:#f8fafc;
+    }
+
     .modeBar{
       display:flex;
       gap:8px;
       flex-wrap:wrap;
       align-items:center;
-      margin-top:14px;
+      margin-top:8px;
+      margin-bottom:14px;
     }
 
     .modeHint{
@@ -722,6 +769,12 @@
           <div class="card-title">Nova Reserva</div>
           <div class="card-sub" id="selLabel">Selecione um período</div>
 
+          <div class="modeBar">
+            <button class="btn active" id="modeReserve" type="button">RESERVA</button>
+            <button class="btn" id="modeStatus" type="button">STATUS</button>
+            <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
+          </div>
+
           <form id="form">
             <div class="field">
               <label for="car">Carro</label>
@@ -760,12 +813,6 @@
               <button class="btn secondary" type="button" id="cancelEditBtn" style="display:none;">Cancelar edição</button>
             </div>
           </form>
-
-          <div class="modeBar">
-            <button class="btn active" id="modeReserve" type="button">RESERVA</button>
-            <button class="btn" id="modeStatus" type="button">STATUS</button>
-            <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
-          </div>
 
           <div class="tabs" id="secHistoricoTabs">
             <button class="tabBtn active" id="tabAtivas" type="button">Ativas / Futuras</button>
@@ -1317,109 +1364,4 @@
             </div>
             <div class="itemText">
               <strong>Veículo:</strong> ${escapeHtml(carInfo.nome)}
-              <br><strong>Para:</strong> ${escapeHtml(r.who || "")}
-              ${r.destination ? `<br><strong>Destino:</strong> ${escapeHtml(r.destination)}` : ``}
-              <br><strong>Período:</strong> ${escapeHtml(r.start)} até ${escapeHtml(r.end)}
-              ${r.motive ? `<br><strong>Motivo:</strong> ${escapeHtml(r.motive)}` : ``}
-            </div>
-          </div>
-          <div class="adminActions">
-            <button class="mini edit" type="button" style="${adminEnabled ? 'display:block;' : 'display:none;'}">Editar</button>
-            <button class="mini delete" type="button" style="${adminEnabled ? 'display:block;' : 'display:none;'}">Excluir</button>
-          </div>
-        `;
-
-        const btnEdit = div.querySelector(".edit");
-        const btnDelete = div.querySelector(".delete");
-
-        btnEdit.addEventListener("click", (e) => {
-          e.stopPropagation();
-          startEdit(r.id);
-        });
-
-        btnDelete.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          await del(r.id);
-        });
-
-        listEl.appendChild(div);
-      });
-    }
-
-    prevBtn.addEventListener("click", () => {
-      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
-      renderCalendar();
-    });
-
-    nextBtn.addEventListener("click", () => {
-      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
-      renderCalendar();
-    });
-
-    document.getElementById("form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      if(!selStart || !selEnd) return alert("Selecione o período (início e fim).");
-
-      const whoV = whoEl.value.trim();
-      if(!whoV) return alert("Informe quem vai usar.");
-
-      const destinationV = destinationEl.value.trim();
-      const motiveV = motiveEl.value.trim();
-      const carId = carEl.value;
-
-      const conflict = reservas.some(r =>
-        r.id !== editingId &&
-        r.car === carId &&
-        rangesOverlap(r.start, r.end, selStart, selEnd)
-      );
-
-      if(conflict){
-        const carInfo = getCarInfo(carId);
-        return alert(`Conflito: ${carInfo.nome} já está reservado nesse período.`);
-      }
-
-      if(editingId){
-        await updateDoc(doc(db, "reservas", editingId), {
-          car: carId,
-          who: whoV,
-          destination: destinationV,
-          motive: motiveV,
-          start: selStart,
-          end: selEnd
-        });
-      } else {
-        await addDoc(reservasRef, {
-          car: carId,
-          who: whoV,
-          destination: destinationV,
-          motive: motiveV,
-          start: selStart,
-          end: selEnd,
-          createdAt: serverTimestamp()
-        });
-      }
-
-      resetForm();
-    });
-
-    onSnapshot(reservasRef, (snap) => {
-      reservas = snap.docs.map(d => normalizeReserva({ id: d.id, ...d.data() }));
-      updateKpis();
-      renderCalendar();
-      renderList();
-    }, (err) => {
-      console.error(err);
-      alert("Erro ao conectar no Firestore. Confira as regras (Rules) e o Hosting.");
-    });
-
-    populateCars();
-    renderDOW();
-    setMode("reserve");
-    activateNav("painel");
-    setListTab("ativas");
-    renderCalendar();
-    renderList();
-  </script>
-</body>
-</html>
+              <br
