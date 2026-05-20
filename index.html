@@ -168,27 +168,21 @@
     }
 
     .kpi-card{
-      background:var(--card);
-      border:1px solid var(--line);
+      background:linear-gradient(180deg,#ffffff 0%, #fcfcfd 100%);
+      border:1px solid #e6ebf2;
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      box-shadow:0 10px 26px rgba(15,23,42,.06);
       padding:18px;
       min-height:114px;
       display:flex;
       justify-content:space-between;
       gap:10px;
+      transition:.18s ease;
     }
 
-    .kpi-label{
-      font-size:14px;
-      color:var(--muted);
-      margin-bottom:10px;
-    }
-
-    .kpi-value{
-      font-size:34px;
-      font-weight:800;
-      line-height:1;
+    .kpi-card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 14px 28px rgba(15,23,42,.09);
     }
 
     .kpi-icon{
@@ -462,14 +456,21 @@
     }
 
     .item{
-      border:1px solid var(--line);
+      border:1px solid #e7edf4;
       background:#fff;
-      border-radius:14px;
-      padding:12px;
+      border-radius:16px;
+      padding:14px;
       display:flex;
       justify-content:space-between;
       gap:12px;
       align-items:flex-start;
+      box-shadow:0 6px 18px rgba(15,23,42,.04);
+      transition:.15s ease;
+    }
+
+    .item:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(15,23,42,.07);
     }
 
     .item.current{
@@ -648,9 +649,9 @@
       </div>
 
       <div class="nav">
-        <button class="nav-btn active" type="button">Painel</button>
-        <button class="nav-btn" type="button">Reservas</button>
-        <button class="nav-btn" type="button">Histórico</button>
+        <button class="nav-btn active" id="navPainel" type="button">Painel</button>
+        <button class="nav-btn" id="navReservas" type="button">Reservas</button>
+        <button class="nav-btn" id="navHistorico" type="button">Histórico</button>
       </div>
 
       <div class="sidebarFooter">Grilazer · sistema interno</div>
@@ -717,7 +718,7 @@
           </div>
         </section>
 
-        <section class="card">
+        <section class="card" id="secReservas">
           <div class="card-title">Nova Reserva</div>
           <div class="card-sub" id="selLabel">Selecione um período</div>
 
@@ -766,7 +767,7 @@
             <div class="modeHint" id="modeHint">Modo: RESERVA (seleciona período)</div>
           </div>
 
-          <div class="tabs">
+          <div class="tabs" id="secHistoricoTabs">
             <button class="tabBtn active" id="tabAtivas" type="button">Ativas / Futuras</button>
             <button class="tabBtn" id="tabHistorico" type="button">Histórico</button>
           </div>
@@ -867,6 +868,12 @@
 
     const tabAtivasBtn = document.getElementById("tabAtivas");
     const tabHistoricoBtn = document.getElementById("tabHistorico");
+
+    const navPainelBtn = document.getElementById("navPainel");
+    const navReservasBtn = document.getElementById("navReservas");
+    const navHistoricoBtn = document.getElementById("navHistorico");
+    const secReservas = document.getElementById("secReservas");
+    const secHistoricoTabs = document.getElementById("secHistoricoTabs");
 
     const kpiVeiculos = document.getElementById("kpiVeiculos");
     const kpiEmUso = document.getElementById("kpiEmUso");
@@ -978,13 +985,37 @@
       cardsTitleLabel.textContent = tab === "ativas"
         ? "Reservas ativas e futuras"
         : "Histórico de reservas concluídas";
+      navPainelBtn.classList.toggle("active", false);
+      navReservasBtn.classList.toggle("active", tab === "ativas");
+      navHistoricoBtn.classList.toggle("active", tab === "historico");
       renderList();
+    }
+
+    function activateNav(section){
+      navPainelBtn.classList.toggle("active", section === "painel");
+      navReservasBtn.classList.toggle("active", section === "reservas");
+      navHistoricoBtn.classList.toggle("active", section === "historico");
     }
 
     modeReserveBtn.addEventListener("click", () => setMode("reserve"));
     modeStatusBtn.addEventListener("click", () => setMode("status"));
     tabAtivasBtn.addEventListener("click", () => setListTab("ativas"));
     tabHistoricoBtn.addEventListener("click", () => setListTab("historico"));
+
+    navPainelBtn.addEventListener("click", () => {
+      activateNav("painel");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    navReservasBtn.addEventListener("click", () => {
+      setListTab("ativas");
+      secReservas.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    navHistoricoBtn.addEventListener("click", () => {
+      setListTab("historico");
+      secHistoricoTabs.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
 
     adminBtn.addEventListener("click", () => {
       const senha = prompt("Senha admin:");
@@ -1385,6 +1416,7 @@
     populateCars();
     renderDOW();
     setMode("reserve");
+    activateNav("painel");
     setListTab("ativas");
     renderCalendar();
     renderList();
